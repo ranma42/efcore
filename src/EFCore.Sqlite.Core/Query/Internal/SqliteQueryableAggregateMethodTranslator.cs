@@ -53,9 +53,13 @@ public class SqliteQueryableAggregateMethodTranslator : IAggregateMethodCallTran
                     var averageArgumentType = GetProviderType(averageSqlExpression);
                     if (averageArgumentType == typeof(decimal))
                     {
-                        throw new NotSupportedException(
-                            SqliteStrings.AggregateOperationNotSupported(
-                                nameof(Queryable.Average), averageArgumentType.ShortDisplayName()));
+                        return _sqlExpressionFactory.Function(
+                            "ef_avg",
+                            [averageSqlExpression],
+                            nullable: true,
+                            argumentsPropagateNullability: [false],
+                            averageSqlExpression.Type,
+                            averageSqlExpression.TypeMapping);
                     }
 
                     break;
@@ -66,12 +70,21 @@ public class SqliteQueryableAggregateMethodTranslator : IAggregateMethodCallTran
                     && source.Selector is SqlExpression maxSqlExpression:
                     var maxArgumentType = GetProviderType(maxSqlExpression);
                     if (maxArgumentType == typeof(DateTimeOffset)
-                        || maxArgumentType == typeof(decimal)
                         || maxArgumentType == typeof(TimeSpan)
                         || maxArgumentType == typeof(ulong))
                     {
                         throw new NotSupportedException(
                             SqliteStrings.AggregateOperationNotSupported(nameof(Queryable.Max), maxArgumentType.ShortDisplayName()));
+                    }
+                    else if (maxArgumentType == typeof(decimal))
+                    {
+                        return _sqlExpressionFactory.Function(
+                            "ef_max",
+                            [maxSqlExpression],
+                            nullable: true,
+                            argumentsPropagateNullability: [false],
+                            maxSqlExpression.Type,
+                            maxSqlExpression.TypeMapping);
                     }
 
                     break;
@@ -82,12 +95,21 @@ public class SqliteQueryableAggregateMethodTranslator : IAggregateMethodCallTran
                     && source.Selector is SqlExpression minSqlExpression:
                     var minArgumentType = GetProviderType(minSqlExpression);
                     if (minArgumentType == typeof(DateTimeOffset)
-                        || minArgumentType == typeof(decimal)
                         || minArgumentType == typeof(TimeSpan)
                         || minArgumentType == typeof(ulong))
                     {
                         throw new NotSupportedException(
                             SqliteStrings.AggregateOperationNotSupported(nameof(Queryable.Min), minArgumentType.ShortDisplayName()));
+                    }
+                    else if (minArgumentType == typeof(decimal))
+                    {
+                        return _sqlExpressionFactory.Function(
+                            "ef_min",
+                            [minSqlExpression],
+                            nullable: true,
+                            argumentsPropagateNullability: [false],
+                            minSqlExpression.Type,
+                            minSqlExpression.TypeMapping);
                     }
 
                     break;
@@ -99,8 +121,19 @@ public class SqliteQueryableAggregateMethodTranslator : IAggregateMethodCallTran
                     var sumArgumentType = GetProviderType(sumSqlExpression);
                     if (sumArgumentType == typeof(decimal))
                     {
-                        throw new NotSupportedException(
-                            SqliteStrings.AggregateOperationNotSupported(nameof(Queryable.Sum), sumArgumentType.ShortDisplayName()));
+                        var nullableSum = _sqlExpressionFactory.Function(
+                            "ef_sum",
+                            [sumSqlExpression],
+                            nullable: true,
+                            argumentsPropagateNullability: [false],
+                            sumSqlExpression.Type,
+                            sumSqlExpression.TypeMapping);
+
+                        // COALESCE(SUM(...), 0m) since IQueryable.Sum always returns non-null result
+                        return _sqlExpressionFactory.Coalesce(
+                            nullableSum,
+                            _sqlExpressionFactory.Constant(0m, sumSqlExpression.TypeMapping),
+                            sumSqlExpression.TypeMapping);
                     }
 
                     break;
