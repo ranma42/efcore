@@ -861,10 +861,7 @@ public class BuiltInDataTypesSqliteTest : BuiltInDataTypesTestBase<BuiltInDataTy
             .Where(e => e.PartitionId == 200)
             .GroupBy(_ => true);
 
-        Assert.Equal(
-            SqliteStrings.AggregateOperationNotSupported(nameof(Queryable.Min), typeof(decimal).ShortDisplayName()),
-            Assert.Throws<NotSupportedException>(
-                () => query.Select(g => g.Min(e => e.TestNullableDecimal)).ToList()).Message);
+        Assert.Equal(2.000000000000001m, query.Select(g => g.Min(e => e.TestNullableDecimal)).Single());
 
         Assert.Equal(
             SqliteStrings.AggregateOperationNotSupported(nameof(Queryable.Min), typeof(DateTimeOffset).ShortDisplayName()),
@@ -914,10 +911,7 @@ public class BuiltInDataTypesSqliteTest : BuiltInDataTypesTestBase<BuiltInDataTy
             .Where(e => e.PartitionId == 201)
             .GroupBy(_ => true);
 
-        Assert.Equal(
-            SqliteStrings.AggregateOperationNotSupported(nameof(Queryable.Max), typeof(decimal).ShortDisplayName()),
-            Assert.Throws<NotSupportedException>(
-                () => query.Select(g => g.Max(e => e.TestNullableDecimal)).ToList()).Message);
+        Assert.Equal(10.000000000000001m, query.Select(g => g.Max(e => e.TestNullableDecimal)).Single());
 
         Assert.Equal(
             SqliteStrings.AggregateOperationNotSupported(nameof(Queryable.Max), typeof(DateTimeOffset).ShortDisplayName()),
@@ -936,7 +930,7 @@ public class BuiltInDataTypesSqliteTest : BuiltInDataTypesTestBase<BuiltInDataTy
     }
 
     [ConditionalFact]
-    public virtual void Cant_query_Average_of_converted_types()
+    public virtual void Can_query_Average_of_converted_types()
     {
         using var context = CreateContext();
         context.Add(
@@ -958,15 +952,14 @@ public class BuiltInDataTypesSqliteTest : BuiltInDataTypesTestBase<BuiltInDataTy
         context.SaveChanges();
 
         Assert.Equal(
-            SqliteStrings.AggregateOperationNotSupported(nameof(Queryable.Average), typeof(decimal).ShortDisplayName()),
-            Assert.Throws<NotSupportedException>(
-                () => context.Set<BuiltInNullableDataTypes>()
-                    .Where(e => e.PartitionId == 202)
-                    .Average(e => e.TestNullableDecimal)).Message);
+            1.000000000000002m,
+            context.Set<BuiltInNullableDataTypes>()
+                .Where(e => e.PartitionId == 202)
+                .Average(e => e.TestNullableDecimal));
     }
 
     [ConditionalFact]
-    public virtual void Cant_query_Sum_of_converted_types()
+    public virtual void Can_query_Sum_of_converted_types()
     {
         using var context = CreateContext();
         context.Add(
@@ -988,11 +981,10 @@ public class BuiltInDataTypesSqliteTest : BuiltInDataTypesTestBase<BuiltInDataTy
         context.SaveChanges();
 
         Assert.Equal(
-            SqliteStrings.AggregateOperationNotSupported(nameof(Queryable.Sum), typeof(decimal).ShortDisplayName()),
-            Assert.Throws<NotSupportedException>(
-                () => context.Set<BuiltInDataTypes>()
-                    .Where(e => e.PartitionId == 203)
-                    .Sum(e => e.TestDecimal)).Message);
+            2.000000000000002m,
+            context.Set<BuiltInDataTypes>()
+                .Where(e => e.PartitionId == 203)
+                .Sum(e => e.TestDecimal));
     }
 
     [ConditionalFact]

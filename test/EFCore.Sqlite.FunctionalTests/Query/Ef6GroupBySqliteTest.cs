@@ -17,22 +17,40 @@ public class Ef6GroupBySqliteTest : Ef6GroupByTestBase<Ef6GroupBySqliteTest.Ef6G
     }
 
     public override async Task Average_Grouped_from_LINQ_101(bool async)
-        => Assert.Equal(
-            SqliteStrings.AggregateOperationNotSupported("Average", "decimal"),
-            (await Assert.ThrowsAsync<NotSupportedException>(
-                () => base.Average_Grouped_from_LINQ_101(async))).Message);
+    {
+        await base.Average_Grouped_from_LINQ_101(async);
+
+        AssertSql(
+            """
+SELECT "p"."Category", ef_avg("p"."UnitPrice") AS "AveragePrice"
+FROM "ProductForLinq" AS "p"
+GROUP BY "p"."Category"
+""");
+    }
 
     public override async Task Max_Grouped_from_LINQ_101(bool async)
-        => Assert.Equal(
-            SqliteStrings.AggregateOperationNotSupported("Max", "decimal"),
-            (await Assert.ThrowsAsync<NotSupportedException>(
-                () => base.Max_Grouped_from_LINQ_101(async))).Message);
+    {
+        await base.Max_Grouped_from_LINQ_101(async);
+
+        AssertSql(
+            """
+SELECT "p"."Category", ef_max("p"."UnitPrice") AS "MostExpensivePrice"
+FROM "ProductForLinq" AS "p"
+GROUP BY "p"."Category"
+""");
+    }
 
     public override async Task Min_Grouped_from_LINQ_101(bool async)
-        => Assert.Equal(
-            SqliteStrings.AggregateOperationNotSupported("Min", "decimal"),
-            (await Assert.ThrowsAsync<NotSupportedException>(
-                () => base.Min_Grouped_from_LINQ_101(async))).Message);
+    {
+        await base.Min_Grouped_from_LINQ_101(async);
+
+        AssertSql(
+            """
+SELECT "p"."Category", ef_min("p"."UnitPrice") AS "CheapestPrice"
+FROM "ProductForLinq" AS "p"
+GROUP BY "p"."Category"
+""");
+    }
 
     public override async Task Whats_new_2021_sample_3(bool async)
         => await base.Whats_new_2021_sample_3(async);
@@ -48,6 +66,9 @@ public class Ef6GroupBySqliteTest : Ef6GroupByTestBase<Ef6GroupBySqliteTest.Ef6G
             SqliteStrings.ApplyNotSupported,
             (await Assert.ThrowsAsync<InvalidOperationException>(
                 () => base.Group_Join_from_LINQ_101(async))).Message);
+
+    private void AssertSql(params string[] expected)
+        => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
 
     public class Ef6GroupBySqliteFixture : Ef6GroupByFixtureBase, ITestSqlLoggerFactory
     {
