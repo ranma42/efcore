@@ -142,6 +142,39 @@ public class SqliteRelationalConnection : RelationalConnection, ISqliteRelationa
                 name: "ef_negate",
                 (decimal? m) => -m,
                 isDeterministic: true);
+
+            sqliteConnection.CreateAggregate(
+                "ef_avg",
+                seed: (null, 0),
+                ((decimal? sum, ulong count) context, decimal? value) => value is null
+                    ? context
+                    : (context.sum is null ? value : context.sum.Value + value.Value, context.count + 1),
+                ((decimal? sum, ulong count) acc) => acc.sum / acc.count,
+                isDeterministic: true);
+
+            sqliteConnection.CreateAggregate(
+                "ef_max",
+                seed: null,
+                (decimal? max, decimal? value) => max is null
+                    ? value
+                    : value is null ? max : decimal.Max(max.Value, value.Value),
+                isDeterministic: true);
+
+            sqliteConnection.CreateAggregate(
+                "ef_min",
+                seed: null,
+                (decimal? min, decimal? value) => min is null
+                    ? value
+                    : value is null ? min : decimal.Min(min.Value, value.Value),
+                isDeterministic: true);
+
+            sqliteConnection.CreateAggregate(
+                "ef_sum",
+                seed: null,
+                (decimal? sum, decimal? value) => value is null
+                    ? sum
+                    : sum is null ? value : sum.Value + value.Value,
+                isDeterministic: true);
         }
         else
         {
