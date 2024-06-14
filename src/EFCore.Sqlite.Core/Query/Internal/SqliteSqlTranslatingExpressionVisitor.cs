@@ -502,22 +502,12 @@ public class SqliteSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExp
     {
         return op switch
         {
-            ExpressionType.Add => DecimalArithmeticExpressionFactoryMethod(ResolveFunctionNameFromExpressionType(op), left, right),
-            ExpressionType.Divide => DecimalDivisionExpressionFactoryMethod(ResolveFunctionNameFromExpressionType(op), left, right),
-            ExpressionType.Multiply => DecimalArithmeticExpressionFactoryMethod(ResolveFunctionNameFromExpressionType(op), left, right),
+            ExpressionType.Add => DecimalArithmeticExpressionFactoryMethod("ef_add", left, right),
+            ExpressionType.Divide => DecimalDivisionExpressionFactoryMethod("ef_divide", left, right),
+            ExpressionType.Multiply => DecimalArithmeticExpressionFactoryMethod("ef_multiply", left, right),
             ExpressionType.Subtract => DecimalSubtractExpressionFactoryMethod(left, right),
             _ => visitedExpression
         };
-
-        static string ResolveFunctionNameFromExpressionType(ExpressionType expressionType)
-            => expressionType switch
-            {
-                ExpressionType.Add => "ef_add",
-                ExpressionType.Divide => "ef_divide",
-                ExpressionType.Multiply => "ef_multiply",
-                ExpressionType.Subtract => "ef_add",
-                _ => throw new InvalidOperationException()
-            };
 
         Expression DecimalArithmeticExpressionFactoryMethod(string name, SqlExpression left, SqlExpression right)
             => Dependencies.SqlExpressionFactory.Function(
@@ -539,7 +529,7 @@ public class SqliteSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExp
         {
             var subtrahend = DecimalNegateExpressionFactoryMethod(right);
 
-            return DecimalArithmeticExpressionFactoryMethod(ResolveFunctionNameFromExpressionType(op), left, subtrahend);
+            return DecimalArithmeticExpressionFactoryMethod("ef_add", left, subtrahend);
         }
     }
 
