@@ -229,9 +229,9 @@ public class SqliteSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExp
                 return compareExpr;
             }
 
-            if (AttemptDecimalArithmetic(sqlBinary))
+            if (DoDecimalArithmetic(sqlBinary) is { } arithExpr)
             {
-                return DoDecimalArithmetics(visitedExpression, sqlBinary.OperatorType, sqlBinary.Left, sqlBinary.Right);
+                return arithExpr;
             }
 
             if (RestrictedBinaryExpressions.TryGetValue(sqlBinary.OperatorType, out var restrictedTypes)
@@ -493,39 +493,39 @@ public class SqliteSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExp
         };
     }
 
-    private static bool AttemptDecimalArithmetic(SqlBinaryExpression sqlBinary)
-        => AreOperandsDecimals(sqlBinary)
-            && new[] { ExpressionType.Add, ExpressionType.Subtract, ExpressionType.Multiply, ExpressionType.Divide }.Contains(
-                sqlBinary.OperatorType);
-
-    private Expression DoDecimalArithmetics(SqlExpression visitedExpression, ExpressionType op, SqlExpression left, SqlExpression right)
+    private SqlExpression? DoDecimalArithmetic(SqlBinaryExpression sqlBinary)
     {
-        return op switch
+        if (!AreOperandsDecimals(sqlBinary))
         {
-            ExpressionType.Add => DecimalArithmeticExpressionFactoryMethod("ef_add", left, right),
-            ExpressionType.Divide => DecimalDivisionExpressionFactoryMethod("ef_divide", left, right),
-            ExpressionType.Multiply => DecimalArithmeticExpressionFactoryMethod("ef_multiply", left, right),
-            ExpressionType.Subtract => DecimalSubtractExpressionFactoryMethod(left, right),
-            _ => visitedExpression
+            return null;
+        }
+
+        return sqlBinary.OperatorType switch
+        {
+            ExpressionType.Add => DecimalArithmeticExpressionFactoryMethod("ef_add", sqlBinary.Left, sqlBinary.Right),
+            ExpressionType.Divide => DecimalDivisionExpressionFactoryMethod("ef_divide", sqlBinary.Left, sqlBinary.Right),
+            ExpressionType.Multiply => DecimalArithmeticExpressionFactoryMethod("ef_multiply", sqlBinary.Left, sqlBinary.Right),
+            ExpressionType.Subtract => DecimalSubtractExpressionFactoryMethod(sqlBinary.Left, sqlBinary.Right),
+            _ => null,
         };
 
-        Expression DecimalArithmeticExpressionFactoryMethod(string name, SqlExpression left, SqlExpression right)
+        SqlExpression DecimalArithmeticExpressionFactoryMethod(string name, SqlExpression left, SqlExpression right)
             => Dependencies.SqlExpressionFactory.Function(
                 name,
                 new[] { left, right },
                 nullable: true,
                 new[] { true, true },
-                visitedExpression.Type);
+                sqlBinary.Type);
 
-        Expression DecimalDivisionExpressionFactoryMethod(string name, SqlExpression left, SqlExpression right)
+        SqlExpression DecimalDivisionExpressionFactoryMethod(string name, SqlExpression left, SqlExpression right)
             => Dependencies.SqlExpressionFactory.Function(
                 name,
                 new[] { left, right },
                 nullable: true,
                 new[] { false, false },
-                visitedExpression.Type);
+                sqlBinary.Type);
 
-        Expression DecimalSubtractExpressionFactoryMethod(SqlExpression left, SqlExpression right)
+        SqlExpression DecimalSubtractExpressionFactoryMethod(SqlExpression left, SqlExpression right)
         {
             var subtrahend = DecimalNegateExpressionFactoryMethod(right);
 
