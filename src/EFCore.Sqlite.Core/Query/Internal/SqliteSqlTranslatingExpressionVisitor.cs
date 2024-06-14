@@ -144,12 +144,7 @@ public class SqliteSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExp
             var operandType = GetProviderType(sqlUnary.Operand);
             if (operandType == typeof(decimal))
             {
-                return Dependencies.SqlExpressionFactory.Function(
-                    name: "ef_negate",
-                    new[] { sqlUnary.Operand },
-                    nullable: true,
-                    new[] { true },
-                    visitedExpression.Type);
+                return DecimalNegateExpressionFactoryMethod(sqlUnary.Operand);
             }
 
             if (operandType == typeof(TimeOnly)
@@ -552,14 +547,17 @@ public class SqliteSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExp
 
         Expression DecimalSubtractExpressionFactoryMethod(SqlExpression left, SqlExpression right)
         {
-            var subtrahend = Dependencies.SqlExpressionFactory.Function(
-                "ef_negate",
-                new[] { right },
-                nullable: true,
-                new[] { true },
-                visitedExpression.Type);
+            var subtrahend = DecimalNegateExpressionFactoryMethod(right);
 
             return DecimalArithmeticExpressionFactoryMethod(ResolveFunctionNameFromExpressionType(op), left, subtrahend);
         }
     }
+
+    SqlFunctionExpression DecimalNegateExpressionFactoryMethod(SqlExpression operand)
+        => Dependencies.SqlExpressionFactory.Function(
+            name: "ef_negate",
+            new[] { operand },
+            nullable: true,
+            new[] { true },
+            operand.Type);
 }
