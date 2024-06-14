@@ -485,20 +485,12 @@ public class SqliteSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExp
 
     private Expression DoDecimalCompare(SqlExpression visitedExpression, ExpressionType op, SqlExpression left, SqlExpression right)
     {
-        var actual = Dependencies.SqlExpressionFactory.Function(
-            name: "ef_compare",
-            new[] { left, right },
-            nullable: true,
-            new[] { true, true },
-            typeof(int));
-        var oracle = Dependencies.SqlExpressionFactory.Constant(value: 0);
-
         return op switch
         {
-            ExpressionType.GreaterThan => Dependencies.SqlExpressionFactory.GreaterThan(left: actual, right: oracle),
-            ExpressionType.GreaterThanOrEqual => Dependencies.SqlExpressionFactory.GreaterThanOrEqual(left: actual, right: oracle),
-            ExpressionType.LessThan => Dependencies.SqlExpressionFactory.LessThan(left: actual, right: oracle),
-            ExpressionType.LessThanOrEqual => Dependencies.SqlExpressionFactory.LessThanOrEqual(left: actual, right: oracle),
+            ExpressionType.GreaterThan or
+            ExpressionType.GreaterThanOrEqual or
+            ExpressionType.LessThan or
+            ExpressionType.LessThanOrEqual => DecimalCompareExpressionFactoryMethod(op, left, right)!,
             _ => visitedExpression
         };
     }
@@ -552,6 +544,18 @@ public class SqliteSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExp
             return DecimalArithmeticExpressionFactoryMethod(ResolveFunctionNameFromExpressionType(op), left, subtrahend);
         }
     }
+
+    SqlBinaryExpression? DecimalCompareExpressionFactoryMethod(ExpressionType op, SqlExpression left, SqlExpression right)
+        => Dependencies.SqlExpressionFactory.MakeBinary(
+            op,
+            Dependencies.SqlExpressionFactory.Function(
+                name: "ef_compare",
+                new[] { left, right },
+                nullable: true,
+                new[] { true, true },
+                typeof(int)),
+            Dependencies.SqlExpressionFactory.Constant(value: 0),
+            null);
 
     SqlFunctionExpression DecimalNegateExpressionFactoryMethod(SqlExpression operand)
         => Dependencies.SqlExpressionFactory.Function(
