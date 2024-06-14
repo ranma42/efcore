@@ -89,13 +89,6 @@ public class SqliteSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExp
             }
         };
 
-    private static readonly IReadOnlyDictionary<Type, string> ModuloFunctions = new Dictionary<Type, string>
-    {
-        { typeof(decimal), "ef_mod" },
-        { typeof(double), "mod" },
-        { typeof(float), "mod" }
-    };
-
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
     ///     the same compatibility standards as public APIs. It may be changed or removed without notice in
@@ -207,11 +200,10 @@ public class SqliteSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExp
         if (visitedExpression is SqlBinaryExpression sqlBinary)
         {
             if (sqlBinary.OperatorType == ExpressionType.Modulo
-                && (ModuloFunctions.TryGetValue(GetProviderType(sqlBinary.Left), out var function)
-                    || ModuloFunctions.TryGetValue(GetProviderType(sqlBinary.Right), out function)))
+                && (AreOperandsOfType(sqlBinary, typeof(float)) || AreOperandsOfType(sqlBinary, typeof(double))))
             {
                 return Dependencies.SqlExpressionFactory.Function(
-                    function,
+                    "mod",
                     new[] { sqlBinary.Left, sqlBinary.Right },
                     nullable: true,
                     argumentsPropagateNullability: new[] { false, false },
@@ -462,13 +454,13 @@ public class SqliteSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExp
                 ?? expression.TypeMapping?.ClrType
                 ?? expression.Type);
 
-    private static bool AreOperandsDecimals(SqlBinaryExpression sqlExpression)
-        => GetProviderType(sqlExpression.Left) == typeof(decimal)
-            && GetProviderType(sqlExpression.Right) == typeof(decimal);
+    private static bool AreOperandsOfType(SqlBinaryExpression sqlExpression, Type type)
+        => GetProviderType(sqlExpression.Left) == type
+            && GetProviderType(sqlExpression.Right) == type;
 
     private SqlExpression? DoDecimalExpression(SqlBinaryExpression sqlBinary)
     {
-        if (!AreOperandsDecimals(sqlBinary))
+        if (!AreOperandsOfType(sqlBinary, typeof(decimal)))
         {
             return null;
         }
@@ -480,7 +472,8 @@ public class SqliteSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExp
             ExpressionType.LessThan or
             ExpressionType.LessThanOrEqual => DecimalCompareExpressionFactoryMethod(sqlBinary.OperatorType, sqlBinary.Left, sqlBinary.Right),
             ExpressionType.Add => DecimalArithmeticExpressionFactoryMethod("ef_add", sqlBinary.Left, sqlBinary.Right),
-            ExpressionType.Divide => DecimalDivisionExpressionFactoryMethod("ef_divide", sqlBinary.Left, sqlBinary.Right),
+            ExpressionType.Divide => DecimalDivModExpressionFactoryMethod("ef_divide", sqlBinary.Left, sqlBinary.Right),
+            ExpressionType.Modulo => DecimalDivModExpressionFactoryMethod("ef_mod", sqlBinary.Left, sqlBinary.Right),
             ExpressionType.Multiply => DecimalArithmeticExpressionFactoryMethod("ef_multiply", sqlBinary.Left, sqlBinary.Right),
             ExpressionType.Subtract => DecimalArithmeticExpressionFactoryMethod("ef_add", sqlBinary.Left,
                 DecimalNegateExpressionFactoryMethod(sqlBinary.Right)),
@@ -495,7 +488,7 @@ public class SqliteSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExp
                 new[] { true, true },
                 sqlBinary.Type);
 
-        SqlExpression DecimalDivisionExpressionFactoryMethod(string name, SqlExpression left, SqlExpression right)
+        SqlExpression DecimalDivModExpressionFactoryMethod(string name, SqlExpression left, SqlExpression right)
             => Dependencies.SqlExpressionFactory.Function(
                 name,
                 new[] { left, right },
