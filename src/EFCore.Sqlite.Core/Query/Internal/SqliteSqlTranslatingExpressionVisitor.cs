@@ -224,9 +224,9 @@ public class SqliteSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExp
                     visitedExpression.TypeMapping);
             }
 
-            if (AttemptDecimalCompare(sqlBinary))
+            if (DoDecimalCompare(sqlBinary) is { } compareExpr)
             {
-                return DoDecimalCompare(visitedExpression, sqlBinary.OperatorType, sqlBinary.Left, sqlBinary.Right);
+                return compareExpr;
             }
 
             if (AttemptDecimalArithmetic(sqlBinary))
@@ -476,22 +476,20 @@ public class SqliteSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExp
         => GetProviderType(sqlExpression.Left) == typeof(decimal)
             && GetProviderType(sqlExpression.Right) == typeof(decimal);
 
-    private static bool AttemptDecimalCompare(SqlBinaryExpression sqlBinary)
-        => AreOperandsDecimals(sqlBinary)
-            && new[]
-            {
-                ExpressionType.GreaterThan, ExpressionType.GreaterThanOrEqual, ExpressionType.LessThan, ExpressionType.LessThanOrEqual
-            }.Contains(sqlBinary.OperatorType);
-
-    private Expression DoDecimalCompare(SqlExpression visitedExpression, ExpressionType op, SqlExpression left, SqlExpression right)
+    private SqlExpression? DoDecimalCompare(SqlBinaryExpression sqlBinary)
     {
-        return op switch
+        if (!AreOperandsDecimals(sqlBinary))
+        {
+            return null;
+        }
+
+        return sqlBinary.OperatorType switch
         {
             ExpressionType.GreaterThan or
             ExpressionType.GreaterThanOrEqual or
             ExpressionType.LessThan or
-            ExpressionType.LessThanOrEqual => DecimalCompareExpressionFactoryMethod(op, left, right)!,
-            _ => visitedExpression
+            ExpressionType.LessThanOrEqual => DecimalCompareExpressionFactoryMethod(sqlBinary.OperatorType, sqlBinary.Left, sqlBinary.Right),
+            _ => null,
         };
     }
 
