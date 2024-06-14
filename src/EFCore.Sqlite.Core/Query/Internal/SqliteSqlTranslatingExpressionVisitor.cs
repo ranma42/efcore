@@ -219,14 +219,9 @@ public class SqliteSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExp
                     visitedExpression.TypeMapping);
             }
 
-            if (DoDecimalCompare(sqlBinary) is { } compareExpr)
+            if (DoDecimalExpression(sqlBinary) is { } expr)
             {
-                return compareExpr;
-            }
-
-            if (DoDecimalArithmetic(sqlBinary) is { } arithExpr)
-            {
-                return arithExpr;
+                return expr;
             }
 
             if (RestrictedBinaryExpressions.TryGetValue(sqlBinary.OperatorType, out var restrictedTypes)
@@ -471,7 +466,7 @@ public class SqliteSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExp
         => GetProviderType(sqlExpression.Left) == typeof(decimal)
             && GetProviderType(sqlExpression.Right) == typeof(decimal);
 
-    private SqlExpression? DoDecimalCompare(SqlBinaryExpression sqlBinary)
+    private SqlExpression? DoDecimalExpression(SqlBinaryExpression sqlBinary)
     {
         if (!AreOperandsDecimals(sqlBinary))
         {
@@ -484,19 +479,6 @@ public class SqliteSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExp
             ExpressionType.GreaterThanOrEqual or
             ExpressionType.LessThan or
             ExpressionType.LessThanOrEqual => DecimalCompareExpressionFactoryMethod(sqlBinary.OperatorType, sqlBinary.Left, sqlBinary.Right),
-            _ => null,
-        };
-    }
-
-    private SqlExpression? DoDecimalArithmetic(SqlBinaryExpression sqlBinary)
-    {
-        if (!AreOperandsDecimals(sqlBinary))
-        {
-            return null;
-        }
-
-        return sqlBinary.OperatorType switch
-        {
             ExpressionType.Add => DecimalArithmeticExpressionFactoryMethod("ef_add", sqlBinary.Left, sqlBinary.Right),
             ExpressionType.Divide => DecimalDivisionExpressionFactoryMethod("ef_divide", sqlBinary.Left, sqlBinary.Right),
             ExpressionType.Multiply => DecimalArithmeticExpressionFactoryMethod("ef_multiply", sqlBinary.Left, sqlBinary.Right),
