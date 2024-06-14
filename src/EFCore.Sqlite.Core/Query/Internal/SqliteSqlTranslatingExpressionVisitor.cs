@@ -505,7 +505,8 @@ public class SqliteSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExp
             ExpressionType.Add => DecimalArithmeticExpressionFactoryMethod("ef_add", sqlBinary.Left, sqlBinary.Right),
             ExpressionType.Divide => DecimalDivisionExpressionFactoryMethod("ef_divide", sqlBinary.Left, sqlBinary.Right),
             ExpressionType.Multiply => DecimalArithmeticExpressionFactoryMethod("ef_multiply", sqlBinary.Left, sqlBinary.Right),
-            ExpressionType.Subtract => DecimalSubtractExpressionFactoryMethod(sqlBinary.Left, sqlBinary.Right),
+            ExpressionType.Subtract => DecimalArithmeticExpressionFactoryMethod("ef_add", sqlBinary.Left,
+                DecimalNegateExpressionFactoryMethod(sqlBinary.Right)),
             _ => null,
         };
 
@@ -524,13 +525,6 @@ public class SqliteSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExp
                 nullable: true,
                 new[] { false, false },
                 sqlBinary.Type);
-
-        SqlExpression DecimalSubtractExpressionFactoryMethod(SqlExpression left, SqlExpression right)
-        {
-            var subtrahend = DecimalNegateExpressionFactoryMethod(right);
-
-            return DecimalArithmeticExpressionFactoryMethod("ef_add", left, subtrahend);
-        }
     }
 
     SqlBinaryExpression? DecimalCompareExpressionFactoryMethod(ExpressionType op, SqlExpression left, SqlExpression right)
