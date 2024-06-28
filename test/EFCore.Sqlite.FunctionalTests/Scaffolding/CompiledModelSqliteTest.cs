@@ -11,7 +11,6 @@ using NetTopologySuite;
 
 namespace Microsoft.EntityFrameworkCore.Scaffolding;
 
-[SpatialiteRequired]
 public class CompiledModelSqliteTest : CompiledModelRelationalTestBase
 {
     protected override void BuildBigModel(ModelBuilder modelBuilder, bool jsonColumns)
