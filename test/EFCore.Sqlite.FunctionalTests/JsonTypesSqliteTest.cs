@@ -208,13 +208,10 @@ public class JsonTypesSqliteTest : JsonTypesRelationalTestBase
     protected override ITestStoreFactory TestStoreFactory
         => SqliteTestStoreFactory.Instance;
 
-    protected override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder)
-    {
-        builder = base.AddOptions(builder)
+    protected override DbContextOptionsBuilder AddOptions(DbContextOptionsBuilder builder) =>
+        base.AddOptions(builder)
             .ConfigureWarnings(
                 w => w
                     .Ignore(SqliteEventId.SchemaConfiguredWarning)
                     .Ignore(SqliteEventId.CompositeKeyWithValueGeneration));
-        return builder;
-    }
 }
