@@ -18,7 +18,6 @@ public abstract class JsonTypesSqlServerTestBase : JsonTypesRelationalTestBase
     {
         builder = base.AddOptions(builder)
             .ConfigureWarnings(w => w.Ignore(SqlServerEventId.DecimalTypeDefaultWarning));
-        new SqlServerDbContextOptionsBuilder(builder).UseNetTopologySuite();
         return builder;
     }
 }

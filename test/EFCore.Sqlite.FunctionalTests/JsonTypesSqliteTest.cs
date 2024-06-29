@@ -215,7 +215,6 @@ public class JsonTypesSqliteTest : JsonTypesRelationalTestBase
                 w => w
                     .Ignore(SqliteEventId.SchemaConfiguredWarning)
                     .Ignore(SqliteEventId.CompositeKeyWithValueGeneration));
-        new SqliteDbContextOptionsBuilder(builder).UseNetTopologySuite();
         return builder;
     }
 }
