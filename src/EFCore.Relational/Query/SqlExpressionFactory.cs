@@ -397,6 +397,14 @@ public class SqlExpressionFactory : ISqlExpressionFactory
         SqlExpression right,
         RelationalTypeMapping? typeMapping)
     {
+        switch (operatorType)
+        {
+            case ExpressionType.AndAlso:
+                return AndAlso(left, right);
+            case ExpressionType.OrElse:
+                return OrElse(left, right);
+        }
+
         if (!SqlBinaryExpression.IsValidOperator(operatorType))
         {
             return null;
@@ -447,11 +455,45 @@ public class SqlExpressionFactory : ISqlExpressionFactory
 
     /// <inheritdoc />
     public virtual SqlExpression AndAlso(SqlExpression left, SqlExpression right)
-        => MakeBinary(ExpressionType.AndAlso, left, right, null)!;
+    {
+        SqlExpression result;
+
+        if (left is SqlConstantExpression { Value: false } || right is SqlConstantExpression { Value: true } || left.Equals(right))
+        {
+            result = left;
+        }
+        else if (left is SqlConstantExpression { Value: true } || right is SqlConstantExpression { Value: false })
+        {
+            result = right;
+        }
+        else
+        {
+            result = new SqlBinaryExpression(ExpressionType.AndAlso, left, right, typeof(bool), null);
+        }
+
+        return ApplyTypeMapping(result, _boolTypeMapping);
+    }
 
     /// <inheritdoc />
     public virtual SqlExpression OrElse(SqlExpression left, SqlExpression right)
-        => MakeBinary(ExpressionType.OrElse, left, right, null)!;
+    {
+        SqlExpression result;
+
+        if (left is SqlConstantExpression { Value: true } || right is SqlConstantExpression { Value: false } || left.Equals(right))
+        {
+            result = left;
+        }
+        else if (left is SqlConstantExpression { Value: false } || right is SqlConstantExpression { Value: true })
+        {
+            result = right;
+        }
+        else
+        {
+            result = new SqlBinaryExpression(ExpressionType.OrElse, left, right, typeof(bool), null);
+        }
+
+        return ApplyTypeMapping(result, _boolTypeMapping);
+    }
 
     /// <inheritdoc />
     public virtual SqlExpression Add(SqlExpression left, SqlExpression right, RelationalTypeMapping? typeMapping = null)
