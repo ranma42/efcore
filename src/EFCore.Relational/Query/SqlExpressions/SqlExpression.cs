@@ -16,6 +16,11 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public abstract class SqlExpression : Expression, IRelationalQuotableExpression, IPrintableExpression
 {
     /// <summary>
+    ///     An expression determining when this expression is NULL.
+    /// </summary>
+    public abstract SqlExpression IsNull { get; }
+
+    /// <summary>
     ///     Creates a new instance of the <see cref="SqlExpression" /> class.
     /// </summary>
     /// <param name="type">The <see cref="System.Type" /> of the expression.</param>

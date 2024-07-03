@@ -15,6 +15,9 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 [DebuggerDisplay("{TableAlias}.{Name}")]
 public class ColumnExpression : SqlExpression
 {
+    /// <inheritdoc/>
+    public override SqlExpression IsNull { get; }
+
     private static ConstructorInfo? _quotingConstructor;
 
     /// <summary>
@@ -36,6 +39,7 @@ public class ColumnExpression : SqlExpression
         Name = name;
         TableAlias = tableAlias;
         IsNullable = nullable;
+        IsNull = nullable ? new IsNull(this) : Constant(false);
     }
 
     /// <summary>

@@ -14,6 +14,9 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 /// </summary>
 public class SqlBinaryExpression : SqlExpression
 {
+    /// <inheritdoc/>
+    public override SqlExpression IsNull { get; }
+
     private static ConstructorInfo? _quotingConstructor;
 
     /// <summary>
@@ -42,7 +45,27 @@ public class SqlBinaryExpression : SqlExpression
         OperatorType = operatorType;
         Left = left;
         Right = right;
+
+        // careful with infinite loops ;)
+        IsNull = OrElse(left.IsNull, right.IsNull);
+        IsNull = operatorType switch {
+            ExpressionType.AndAlso => AndAlso(IsNull, Not(AndAlso(StrictEquals(left, false), StrictEquals(right, false))),
+            ExpressionType.OrElse => AndAlso(IsNull, Not(AndAlso(StrictEquals(left, true), StrictEquals(right, true))),
+            _ => IsNull,
+        };
     }
+
+    /*
+        &01X
+        0000
+        101X
+        X0XX
+
+        &01X
+        0000
+        1001
+        X011
+    */
 
     /// <summary>
     ///     The operator of this SQL binary operation.

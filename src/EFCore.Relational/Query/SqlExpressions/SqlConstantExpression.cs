@@ -16,6 +16,9 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 /// </summary>
 public class SqlConstantExpression : SqlExpression
 {
+    /// <inheritdoc/>
+    public override SqlExpression IsNull { get; }
+
     private static ConstructorInfo? _quotingConstructor;
 
     /// <summary>
@@ -26,7 +29,10 @@ public class SqlConstantExpression : SqlExpression
     /// <param name="typeMapping">The <see cref="RelationalTypeMapping" /> associated with the expression.</param>
     public SqlConstantExpression(object? value, Type type, RelationalTypeMapping? typeMapping)
         : base(type.UnwrapNullableType(), typeMapping)
-        => Value = value;
+    {
+        Value = value;
+        IsNull = Constant(value is null); // careful with infinite loops ;)
+    }
 
     /// <summary>
     ///     Creates a new instance of the <see cref="SqlConstantExpression" /> class.
