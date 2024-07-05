@@ -1815,10 +1815,23 @@ public class SqlNullabilityProcessor
         // doing a full null semantics rewrite - removing all nulls from truth table
         nullable = false;
 
-        // (a == b && (a != null && b != null)) || (a == null && b == null)
-        body = _sqlExpressionFactory.OrElse(
-            _sqlExpressionFactory.AndAlso(body, _sqlExpressionFactory.AndAlso(leftIsNotNull, rightIsNotNull)),
-            _sqlExpressionFactory.AndAlso(leftIsNull, rightIsNull));
+        if (leftNullable && rightNullable
+            || leftIsNull is SqlUnaryExpression { Operand: ColumnExpression }
+            || rightIsNull is SqlUnaryExpression { Operand: ColumnExpression })
+        {
+            // (a == b && (a != null && b != null)) || (a == null && b == null)
+            body = _sqlExpressionFactory.OrElse(
+                _sqlExpressionFactory.AndAlso(body, _sqlExpressionFactory.AndAlso(leftIsNotNull, rightIsNotNull)),
+                _sqlExpressionFactory.AndAlso(leftIsNull, rightIsNull));
+        }
+        else
+        {
+            // a == b -> CASE WHEN a == b THEN TRUE ELSE FALSE END
+            body = _sqlExpressionFactory.Case(
+                [new(body, _sqlExpressionFactory.Constant(true, body.Type, body.TypeMapping))],
+                _sqlExpressionFactory.Constant(false, body.Type, body.TypeMapping));
+        }
+
 
         if (sqlBinaryExpression.OperatorType == ExpressionType.NotEqual)
         {
