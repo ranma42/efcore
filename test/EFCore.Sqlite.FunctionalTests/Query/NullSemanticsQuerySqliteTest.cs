@@ -1139,14 +1139,13 @@ END = 3
         AssertSql(
             """
 SELECT CASE
-    WHEN "e"."StringA" = 'Foo' THEN 3
-    WHEN "e"."StringB" = 'Foo' THEN 2
-    WHEN "e"."StringC" = 'Foo' THEN 3
-END = 2 AND CASE
-    WHEN "e"."StringA" = 'Foo' THEN 3
-    WHEN "e"."StringB" = 'Foo' THEN 2
-    WHEN "e"."StringC" = 'Foo' THEN 3
-END IS NOT NULL
+    WHEN CASE
+        WHEN "e"."StringA" = 'Foo' THEN 3
+        WHEN "e"."StringB" = 'Foo' THEN 2
+        WHEN "e"."StringC" = 'Foo' THEN 3
+    END = 2 THEN 1
+    ELSE 0
+END
 FROM "Entities1" AS "e"
 ORDER BY "e"."Id"
 """);
@@ -1159,14 +1158,13 @@ ORDER BY "e"."Id"
         AssertSql(
             """
 SELECT CASE
-    WHEN "e"."StringA" = 'Foo' THEN 3
-    WHEN "e"."StringB" = 'Foo' THEN 2
-    WHEN "e"."StringC" = 'Foo' THEN 3
-END = 3 AND CASE
-    WHEN "e"."StringA" = 'Foo' THEN 3
-    WHEN "e"."StringB" = 'Foo' THEN 2
-    WHEN "e"."StringC" = 'Foo' THEN 3
-END IS NOT NULL
+    WHEN CASE
+        WHEN "e"."StringA" = 'Foo' THEN 3
+        WHEN "e"."StringB" = 'Foo' THEN 2
+        WHEN "e"."StringC" = 'Foo' THEN 3
+    END = 3 THEN 1
+    ELSE 0
+END
 FROM "Entities1" AS "e"
 ORDER BY "e"."Id"
 """);

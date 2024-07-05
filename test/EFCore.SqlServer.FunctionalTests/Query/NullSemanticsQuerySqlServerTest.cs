@@ -1924,7 +1924,10 @@ WHERE [e].[NullableIntA] + [e].[IntB] <> [e].[IntC] OR [e].[NullableIntA] IS NUL
             """
 SELECT [e].[Id]
 FROM [Entities1] AS [e]
-WHERE [e].[NullableIntA] + [e].[NullableIntB] <> [e].[IntC] OR [e].[NullableIntA] IS NULL OR [e].[NullableIntB] IS NULL
+WHERE CASE
+    WHEN [e].[NullableIntA] + [e].[NullableIntB] = [e].[IntC] THEN CAST(0 AS bit)
+    ELSE CAST(1 AS bit)
+END = CAST(1 AS bit)
 """);
     }
 
@@ -3918,11 +3921,7 @@ SELECT CASE
         WHEN [e].[StringA] = N'Foo' THEN 3
         WHEN [e].[StringB] = N'Foo' THEN 2
         WHEN [e].[StringC] = N'Foo' THEN 3
-    END = 2 AND CASE
-        WHEN [e].[StringA] = N'Foo' THEN 3
-        WHEN [e].[StringB] = N'Foo' THEN 2
-        WHEN [e].[StringC] = N'Foo' THEN 3
-    END IS NOT NULL THEN CAST(1 AS bit)
+    END = 2 THEN CAST(1 AS bit)
     ELSE CAST(0 AS bit)
 END
 FROM [Entities1] AS [e]
@@ -3941,11 +3940,7 @@ SELECT CASE
         WHEN [e].[StringA] = N'Foo' THEN 3
         WHEN [e].[StringB] = N'Foo' THEN 2
         WHEN [e].[StringC] = N'Foo' THEN 3
-    END = 3 AND CASE
-        WHEN [e].[StringA] = N'Foo' THEN 3
-        WHEN [e].[StringB] = N'Foo' THEN 2
-        WHEN [e].[StringC] = N'Foo' THEN 3
-    END IS NOT NULL THEN CAST(1 AS bit)
+    END = 3 THEN CAST(1 AS bit)
     ELSE CAST(0 AS bit)
 END
 FROM [Entities1] AS [e]

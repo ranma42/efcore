@@ -10135,10 +10135,11 @@ FROM (
 ) AS [u]
 INNER JOIN [LocustHordes] AS [l1] ON [u].[Name] = [l1].[CommanderName]
 WHERE CASE
-    WHEN [l1].[Name] = N'Locust' THEN CAST(1 AS bit)
-END = CAST(0 AS bit) OR CASE
-    WHEN [l1].[Name] = N'Locust' THEN CAST(1 AS bit)
-END IS NULL
+    WHEN CASE
+        WHEN [l1].[Name] = N'Locust' THEN CAST(1 AS bit)
+    END = CAST(1 AS bit) THEN CAST(0 AS bit)
+    ELSE CAST(1 AS bit)
+END = CAST(1 AS bit)
 """);
     }
 
@@ -10264,10 +10265,7 @@ WHERE CASE
     WHEN [u].[HasSoulPatch] = @__prm_0 AND (
         SELECT TOP(1) [w].[Name]
         FROM [Weapons] AS [w]
-        WHERE [w].[Id] = [u].[SquadId]) = @__prm2_1 AND (
-        SELECT TOP(1) [w].[Name]
-        FROM [Weapons] AS [w]
-        WHERE [w].[Id] = [u].[SquadId]) IS NOT NULL THEN CAST(1 AS bit)
+        WHERE [w].[Id] = [u].[SquadId]) = @__prm2_1 THEN CAST(1 AS bit)
     ELSE CAST(0 AS bit)
 END = CAST(1 AS bit)
 """);

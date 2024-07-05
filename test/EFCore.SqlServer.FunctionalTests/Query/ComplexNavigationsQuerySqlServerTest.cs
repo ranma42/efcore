@@ -2857,11 +2857,7 @@ SELECT CASE
         SELECT TOP(1) [l1].[Name]
         FROM [LevelTwo] AS [l0]
         INNER JOIN [LevelOne] AS [l1] ON [l0].[Level1_Required_Id] = [l1].[Id]
-        ORDER BY [l0].[Id]) = N'L1 02' AND (
-        SELECT TOP(1) [l1].[Name]
-        FROM [LevelTwo] AS [l0]
-        INNER JOIN [LevelOne] AS [l1] ON [l0].[Level1_Required_Id] = [l1].[Id]
-        ORDER BY [l0].[Id]) IS NOT NULL THEN CAST(1 AS bit)
+        ORDER BY [l0].[Id]) = N'L1 02' THEN CAST(1 AS bit)
     ELSE CAST(0 AS bit)
 END
 FROM [LevelTwo] AS [l]
@@ -3584,31 +3580,22 @@ ORDER BY [l].[Id], [l0].[Id], [l1].[Id]
             """
 SELECT [l].[Id], [l].[Date], [l].[Name], [l].[OneToMany_Optional_Self_Inverse1Id], [l].[OneToMany_Required_Self_Inverse1Id], [l].[OneToOne_Optional_Self1Id]
 FROM [LevelOne] AS [l]
-WHERE (
-    SELECT TOP(1) (
+WHERE CASE
+    WHEN (
         SELECT TOP(1) (
-            SELECT TOP(1) [l2].[Name]
-            FROM [LevelFour] AS [l2]
-            WHERE [l2].[Level3_Required_Id] = [l1].[Id]
-            ORDER BY [l2].[Id])
-        FROM [LevelThree] AS [l1]
-        WHERE [l1].[Level2_Required_Id] = [l0].[Id]
-        ORDER BY [l1].[Id])
-    FROM [LevelTwo] AS [l0]
-    WHERE [l0].[Level1_Optional_Id] = [l].[Id]
-    ORDER BY [l0].[Id]) <> N'Foo' OR (
-    SELECT TOP(1) (
-        SELECT TOP(1) (
-            SELECT TOP(1) [l2].[Name]
-            FROM [LevelFour] AS [l2]
-            WHERE [l2].[Level3_Required_Id] = [l1].[Id]
-            ORDER BY [l2].[Id])
-        FROM [LevelThree] AS [l1]
-        WHERE [l1].[Level2_Required_Id] = [l0].[Id]
-        ORDER BY [l1].[Id])
-    FROM [LevelTwo] AS [l0]
-    WHERE [l0].[Level1_Optional_Id] = [l].[Id]
-    ORDER BY [l0].[Id]) IS NULL
+            SELECT TOP(1) (
+                SELECT TOP(1) [l2].[Name]
+                FROM [LevelFour] AS [l2]
+                WHERE [l2].[Level3_Required_Id] = [l1].[Id]
+                ORDER BY [l2].[Id])
+            FROM [LevelThree] AS [l1]
+            WHERE [l1].[Level2_Required_Id] = [l0].[Id]
+            ORDER BY [l1].[Id])
+        FROM [LevelTwo] AS [l0]
+        WHERE [l0].[Level1_Optional_Id] = [l].[Id]
+        ORDER BY [l0].[Id]) = N'Foo' THEN CAST(0 AS bit)
+    ELSE CAST(1 AS bit)
+END = CAST(1 AS bit)
 ORDER BY [l].[Id]
 """);
     }
@@ -4000,7 +3987,10 @@ SELECT [l0].[Id] AS [Key], MAX([l].[Id]) AS [Max]
 FROM [LevelTwo] AS [l]
 INNER JOIN [LevelOne] AS [l0] ON [l].[OneToMany_Required_Inverse2Id] = [l0].[Id]
 GROUP BY [l0].[Id]
-HAVING MAX([l].[Id]) <> 2 OR MAX([l].[Id]) IS NULL
+HAVING CASE
+    WHEN MAX([l].[Id]) = 2 THEN CAST(0 AS bit)
+    ELSE CAST(1 AS bit)
+END = CAST(1 AS bit)
 """);
     }
 
@@ -4051,12 +4041,12 @@ FROM [LevelOne] AS [l]
 LEFT JOIN [LevelTwo] AS [l0] ON [l].[Id] = [l0].[Level1_Optional_Id]
 LEFT JOIN [LevelThree] AS [l1] ON [l0].[Id] = [l1].[Level2_Optional_Id]
 WHERE CASE
-    WHEN [l0].[Id] IS NULL THEN NULL
-    ELSE [l1].[Name]
-END <> N'L' OR CASE
-    WHEN [l0].[Id] IS NULL THEN NULL
-    ELSE [l1].[Name]
-END IS NULL
+    WHEN CASE
+        WHEN [l0].[Id] IS NULL THEN NULL
+        ELSE [l1].[Name]
+    END = N'L' THEN CAST(0 AS bit)
+    ELSE CAST(1 AS bit)
+END = CAST(1 AS bit)
 """);
     }
 

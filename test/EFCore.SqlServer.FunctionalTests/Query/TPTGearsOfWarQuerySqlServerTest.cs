@@ -8601,10 +8601,11 @@ INNER JOIN (
     WHERE [l0].[Id] IS NOT NULL
 ) AS [s] ON [l].[Name] = [s].[CommanderName]
 WHERE CASE
-    WHEN [s].[Name] = N'Locust' THEN CAST(1 AS bit)
-END = CAST(0 AS bit) OR CASE
-    WHEN [s].[Name] = N'Locust' THEN CAST(1 AS bit)
-END IS NULL
+    WHEN CASE
+        WHEN [s].[Name] = N'Locust' THEN CAST(1 AS bit)
+    END = CAST(1 AS bit) THEN CAST(0 AS bit)
+    ELSE CAST(1 AS bit)
+END = CAST(1 AS bit)
 """);
     }
 
@@ -8724,10 +8725,7 @@ WHERE CASE
     WHEN [g].[HasSoulPatch] = @__prm_0 AND (
         SELECT TOP(1) [w].[Name]
         FROM [Weapons] AS [w]
-        WHERE [w].[Id] = [g].[SquadId]) = @__prm2_1 AND (
-        SELECT TOP(1) [w].[Name]
-        FROM [Weapons] AS [w]
-        WHERE [w].[Id] = [g].[SquadId]) IS NOT NULL THEN CAST(1 AS bit)
+        WHERE [w].[Id] = [g].[SquadId]) = @__prm2_1 THEN CAST(1 AS bit)
     ELSE CAST(0 AS bit)
 END = CAST(1 AS bit)
 """);

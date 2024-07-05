@@ -2873,10 +2873,11 @@ END AS "IsEradicated", "f"."CommanderName", "f"."Name"
 FROM "LocustLeaders" AS "l"
 INNER JOIN "Factions" AS "f" ON "l"."Name" = "f"."CommanderName"
 WHERE CASE
-    WHEN "f"."Name" = 'Locust' THEN 1
-END = 0 OR CASE
-    WHEN "f"."Name" = 'Locust' THEN 1
-END IS NULL
+    WHEN CASE
+        WHEN "f"."Name" = 'Locust' THEN 1
+    END = 1 THEN 0
+    ELSE 1
+END
 """);
     }
 
@@ -6747,15 +6748,11 @@ LEFT JOIN "Weapons" AS "w" ON "w"."SynergyWithId" IS NOT NULL
 SELECT "g"."Nickname", "g"."SquadId", "g"."AssignedCityName", "g"."CityOfBirthName", "g"."Discriminator", "g"."FullName", "g"."HasSoulPatch", "g"."LeaderNickname", "g"."LeaderSquadId", "g"."Rank"
 FROM "Gears" AS "g"
 WHERE CASE
-    WHEN "g"."HasSoulPatch" = @__prm_0 THEN (
+    WHEN "g"."HasSoulPatch" = @__prm_0 AND (
         SELECT "w"."Name"
         FROM "Weapons" AS "w"
         WHERE "w"."Id" = "g"."SquadId"
-        LIMIT 1) = @__prm2_1 AND (
-        SELECT "w"."Name"
-        FROM "Weapons" AS "w"
-        WHERE "w"."Id" = "g"."SquadId"
-        LIMIT 1) IS NOT NULL
+        LIMIT 1) = @__prm2_1 THEN 1
     ELSE 0
 END
 """);
