@@ -576,22 +576,37 @@ public class SqlExpressionFactory : ISqlExpressionFactory
         left = ApplyTypeMapping(left, inferredTypeMapping);
         right = ApplyTypeMapping(right, inferredTypeMapping);
 
-        return left switch
+        var arguments = GetArgs(left).Concat(GetArgs(right))
+            .Where(x => x is not SqlConstantExpression { Value: null })
+            .TakeUpTo(x =>
+                x is SqlConstantExpression { Value: not null }
+                    or SqlParameterExpression { IsNullable: false }
+                    or ColumnExpression { IsNullable: false })
+            .Distinct()
+            .ToList();
+
+        return arguments switch
         {
-            SqlConstantExpression { Value: null } => right,
-
-            SqlConstantExpression { Value: not null } or
-            ColumnExpression { IsNullable: false } => left,
-
+            [] => left, // COALESCE(NULL, NULL) -> NULL
+            [var expr] => expr,
             _ => new SqlFunctionExpression(
                 "COALESCE",
-                [left, right],
+                arguments: arguments,
                 nullable: true,
                 // COALESCE is handled separately since it's only nullable if *all* arguments are null
-                argumentsPropagateNullability: [false, false],
+                argumentsPropagateNullability: arguments.Select(_ => false),
                 resultType,
-                inferredTypeMapping)
+                inferredTypeMapping),
         };
+
+        static IEnumerable<SqlExpression> GetArgs(SqlExpression sqlExpression)
+            => sqlExpression switch
+            {
+                SqlFunctionExpression { IsBuiltIn: true, Arguments: not null } function
+                when string.Equals(function.Name, "COALESCE", StringComparison.OrdinalIgnoreCase)
+                => function.Arguments!,
+                _ => [sqlExpression]
+            };
     }
 
     /// <inheritdoc />

@@ -62,41 +62,7 @@ public class SqlExpressionSimplifyingExpressionVisitor : ExpressionVisitor
             return SimplifySqlBinary(sqlBinaryExpression);
         }
 
-        if (extensionExpression is SqlFunctionExpression sqlFunctionExpression
-            && IsCoalesce(sqlFunctionExpression))
-        {
-            var arguments = new List<SqlExpression>();
-            foreach (var argument in sqlFunctionExpression.Arguments!)
-            {
-                var newArgument = (SqlExpression)Visit(argument);
-                if (IsCoalesce(newArgument))
-                {
-                    arguments.AddRange(((SqlFunctionExpression)newArgument).Arguments!);
-                }
-                else
-                {
-                    arguments.Add(newArgument);
-                }
-            }
-
-            var distinctArguments = arguments.Distinct().ToList();
-
-            return distinctArguments.Count > 1
-                ? new SqlFunctionExpression(
-                    sqlFunctionExpression.Name,
-                    distinctArguments,
-                    sqlFunctionExpression.IsNullable,
-                    argumentsPropagateNullability: distinctArguments.Select(_ => false).ToArray(),
-                    sqlFunctionExpression.Type,
-                    sqlFunctionExpression.TypeMapping)
-                : distinctArguments[0];
-        }
-
         return base.VisitExtension(extensionExpression);
-
-        static bool IsCoalesce(SqlExpression sqlExpression)
-            => sqlExpression is SqlFunctionExpression { IsBuiltIn: true, Arguments: not null } sqlFunctionExpression
-                && string.Equals(sqlFunctionExpression.Name, "COALESCE", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsCompareTo([NotNullWhen(true)] CaseExpression? caseExpression)
