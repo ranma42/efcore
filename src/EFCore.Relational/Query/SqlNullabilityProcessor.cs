@@ -2119,9 +2119,8 @@ public class SqlNullabilityProcessor
 
             case SqlFunctionExpression sqlFunctionExpression:
             {
-                if (sqlFunctionExpression.IsBuiltIn
-                    && string.Equals("COALESCE", sqlFunctionExpression.Name, StringComparison.OrdinalIgnoreCase)
-                    && sqlFunctionExpression.Arguments != null)
+                if (sqlFunctionExpression is { IsBuiltIn: true, Arguments: not null }
+                    && string.Equals("COALESCE", sqlFunctionExpression.Name, StringComparison.OrdinalIgnoreCase))
                 {
                     // for coalesce
                     // (a ?? b ?? c) == null -> a == null && b == null && c == null

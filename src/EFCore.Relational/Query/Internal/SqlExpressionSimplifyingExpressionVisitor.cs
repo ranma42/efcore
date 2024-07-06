@@ -95,9 +95,8 @@ public class SqlExpressionSimplifyingExpressionVisitor : ExpressionVisitor
         return base.VisitExtension(extensionExpression);
 
         static bool IsCoalesce(SqlExpression sqlExpression)
-            => sqlExpression is SqlFunctionExpression { IsBuiltIn: true, Instance: null } sqlFunctionExpression
-                && string.Equals(sqlFunctionExpression.Name, "COALESCE", StringComparison.OrdinalIgnoreCase)
-                && sqlFunctionExpression.Arguments?.Count > 1;
+            => sqlExpression is SqlFunctionExpression { IsBuiltIn: true, Arguments: not null } sqlFunctionExpression
+                && string.Equals(sqlFunctionExpression.Name, "COALESCE", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsCompareTo([NotNullWhen(true)] CaseExpression? caseExpression)
