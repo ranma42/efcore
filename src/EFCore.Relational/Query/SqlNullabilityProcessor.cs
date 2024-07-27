@@ -1820,9 +1820,7 @@ public class SqlNullabilityProcessor
         // a == b && some_column IS NOT NULL
         // as we consider it simpler than the CASE expression; additionally it
         // might take advantage of indexes on some_column, on a and/or on b.
-        if (leftNullable && rightNullable
-            || leftIsNull is SqlUnaryExpression { Operand: ColumnExpression }
-            || rightIsNull is SqlUnaryExpression { Operand: ColumnExpression })
+        if (leftNullable && rightNullable)
         {
             // (a == b && (a != null && b != null)) || (a == null && b == null)
             body = _sqlExpressionFactory.OrElse(
