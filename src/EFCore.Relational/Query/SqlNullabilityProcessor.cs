@@ -1815,6 +1815,11 @@ public class SqlNullabilityProcessor
         // doing a full null semantics rewrite - removing all nulls from truth table
         nullable = false;
 
+        // When both operands are nullable, the CASE transformation is invalid.
+        // We also use the generic transformation when it is simplifies into
+        // a == b && some_column IS NOT NULL
+        // as we consider it simpler than the CASE expression; additionally it
+        // might take advantage of indexes on some_column, on a and/or on b.
         if (leftNullable && rightNullable
             || leftIsNull is SqlUnaryExpression { Operand: ColumnExpression }
             || rightIsNull is SqlUnaryExpression { Operand: ColumnExpression })
@@ -1826,6 +1831,8 @@ public class SqlNullabilityProcessor
         }
         else
         {
+            // When only one of the operands is nullable, we avoid duplicating
+            // complex expressions by performing the following transformation:
             // a == b -> CASE WHEN a == b THEN TRUE ELSE FALSE END
             body = _sqlExpressionFactory.Case(
                 [new(body, _sqlExpressionFactory.Constant(true, body.Type, body.TypeMapping))],
