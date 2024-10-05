@@ -1850,6 +1850,11 @@ public sealed partial class SelectExpression : TableExpressionBase
     /// <param name="orderingExpression">An ordering expression to use for ordering.</param>
     public void ApplyOrdering(OrderingExpression orderingExpression)
     {
+        if (Limit is SqlConstantExpression { Value: 1 })
+        {
+            return;
+        }
+
         if (IsDistinct
             || Limit != null
             || Offset != null)
@@ -1867,6 +1872,11 @@ public sealed partial class SelectExpression : TableExpressionBase
     /// <param name="orderingExpression">An ordering expression to use for ordering.</param>
     public void AppendOrdering(OrderingExpression orderingExpression)
     {
+        if (Limit is SqlConstantExpression { Value: 1 })
+        {
+            return;
+        }
+
         if (!_orderings.Any(o => o.Expression.Equals(orderingExpression.Expression)))
         {
             AppendOrderingInternal(orderingExpression);
