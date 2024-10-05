@@ -106,7 +106,7 @@ ORDER BY [c].[CustomerID]
             """
 SELECT TOP(1) [c].[CustomerID], [c].[Address], [c].[City], [c].[CompanyName], [c].[ContactName], [c].[ContactTitle], [c].[Country], [c].[Fax], [c].[Phone], [c].[PostalCode], [c].[Region]
 FROM [Customers] AS [c]
-ORDER BY [c].[CompanyName] DESC, [c].[CustomerID]
+ORDER BY [c].[CompanyName] DESC
 """,
             //
             """
@@ -357,7 +357,7 @@ ORDER BY (
     SELECT TOP(1) [o].[OrderDate]
     FROM [Orders] AS [o]
     WHERE [c].[CustomerID] = [o].[CustomerID]
-    ORDER BY [o].[OrderDate] DESC) DESC, [c].[CustomerID]
+    ORDER BY [o].[OrderDate] DESC) DESC
 """,
             //
             """
@@ -489,7 +489,7 @@ ORDER BY [c0].[ContactTitle], [c0].[CustomerID]
             """
 SELECT TOP(1) [c].[CustomerID], [c].[Address], [c].[City], [c].[CompanyName], [c].[ContactName], [c].[ContactTitle], [c].[Country], [c].[Fax], [c].[Phone], [c].[PostalCode], [c].[Region]
 FROM [Customers] AS [c]
-ORDER BY [c].[CompanyName] DESC, [c].[CustomerID]
+ORDER BY [c].[CompanyName] DESC
 """,
             //
             """
@@ -517,7 +517,7 @@ ORDER BY (
     SELECT TOP(1) [o].[OrderDate]
     FROM [Orders] AS [o]
     WHERE [c].[CustomerID] = [o].[CustomerID]
-    ORDER BY [o].[EmployeeID]), [c].[CustomerID]
+    ORDER BY [o].[EmployeeID])
 """,
             //
             """
@@ -1518,7 +1518,7 @@ ORDER BY (
     SELECT TOP(1) [o].[OrderDate]
     FROM [Orders] AS [o]
     WHERE [c].[CustomerID] = [o].[CustomerID]
-    ORDER BY [o].[OrderDate] DESC) DESC, [c].[CustomerID]
+    ORDER BY [o].[OrderDate] DESC) DESC
 """,
             //
             """
@@ -2603,7 +2603,6 @@ WHERE [o].[CustomerID] LIKE N'F%'
             """
 SELECT TOP(1) [c].[CustomerID], [c].[Address], [c].[City], [c].[CompanyName], [c].[ContactName], [c].[ContactTitle], [c].[Country], [c].[Fax], [c].[Phone], [c].[PostalCode], [c].[Region]
 FROM [Customers] AS [c]
-ORDER BY [c].[CustomerID]
 """,
             //
             """

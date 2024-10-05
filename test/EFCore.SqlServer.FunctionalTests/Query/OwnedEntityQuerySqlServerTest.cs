@@ -601,7 +601,6 @@ LEFT JOIN (
 SELECT TOP(1) [l].[Id]
 FROM [Location25680] AS [l]
 WHERE [l].[Id] = @__id_0
-ORDER BY [l].[Id]
 """);
     }
 

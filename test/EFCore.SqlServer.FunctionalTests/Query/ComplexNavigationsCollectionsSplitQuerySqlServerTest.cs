@@ -3428,7 +3428,6 @@ ORDER BY [l3].[Id]
 SELECT TOP(1) [l].[Id]
 FROM [LevelOne] AS [l]
 WHERE [l].[Id] = 1
-ORDER BY [l].[Id]
 """,
             //
             """
@@ -3955,7 +3954,7 @@ END, [l0].[Id]
 FROM [LevelOne] AS [l]
 LEFT JOIN [LevelTwo] AS [l0] ON [l].[Id] = [l0].[Level1_Optional_Id]
 WHERE [l].[Id] = 2
-ORDER BY [l].[Name], [l].[Id], [l0].[Id]
+ORDER BY [l].[Name]
 """,
             //
             """
