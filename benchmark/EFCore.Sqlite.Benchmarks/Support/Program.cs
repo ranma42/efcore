@@ -8,5 +8,6 @@ namespace Microsoft.EntityFrameworkCore.Benchmarks;
 public class Program
 {
     private static void Main(string[] args)
-        => EFCoreBenchmarkRunner.Run(args, typeof(Program).Assembly);
+        // => EFCoreBenchmarkRunner.Run(args, typeof(Program).Assembly);
+        => EFCoreBenchmarkRunner.Run(args, typeof(EFCoreBenchmarkRunner).Assembly);
 }
