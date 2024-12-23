@@ -16,6 +16,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 /// </summary>
 public class SqlConstantExpression : SqlExpression
 {
+    private int? _hashCode;
     private static ConstructorInfo? _quotingConstructor;
 
     /// <summary>
@@ -90,6 +91,7 @@ public class SqlConstantExpression : SqlExpression
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is SqlConstantExpression sqlConstantExpression
+                && GetOrComputeHashCode() == sqlConstantExpression.GetOrComputeHashCode()
                 && Equals(sqlConstantExpression));
 
     private bool Equals(SqlConstantExpression sqlConstantExpression)
@@ -127,5 +129,10 @@ public class SqlConstantExpression : SqlExpression
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => GetOrComputeHashCode();
+
+    private int GetOrComputeHashCode() => _hashCode ??= ComputeHashCode();
+
+    private int ComputeHashCode()
         => HashCode.Combine(base.GetHashCode(), Value);
 }
