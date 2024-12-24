@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class UnionExpression : SetOperationBase
 {
     private static ConstructorInfo? _quotingConstructor;
+    private int? _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="UnionExpression" /> class.
@@ -128,6 +129,7 @@ public class UnionExpression : SetOperationBase
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is UnionExpression unionExpression
+                && GetOrComputeHashCode() == unionExpression.GetOrComputeHashCode()
                 && Equals(unionExpression));
 
     private bool Equals(UnionExpression unionExpression)
@@ -135,5 +137,10 @@ public class UnionExpression : SetOperationBase
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => GetOrComputeHashCode();
+
+    private int GetOrComputeHashCode() => _hashCode ??= ComputeHashCode();
+
+    private int ComputeHashCode()
         => HashCode.Combine(base.GetHashCode(), GetType());
 }

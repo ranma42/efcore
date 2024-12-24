@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public sealed class DeleteExpression : Expression, IRelationalQuotableExpression, IPrintableExpression
 {
     private static ConstructorInfo? _quotingConstructor;
+    private int? _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="DeleteExpression" /> class.
@@ -125,6 +126,7 @@ public sealed class DeleteExpression : Expression, IRelationalQuotableExpression
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is DeleteExpression deleteExpression
+                && GetOrComputeHashCode() == deleteExpression.GetOrComputeHashCode()
                 && Equals(deleteExpression));
 
     private bool Equals(DeleteExpression deleteExpression)
@@ -133,5 +135,10 @@ public sealed class DeleteExpression : Expression, IRelationalQuotableExpression
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => GetOrComputeHashCode();
+
+    private int GetOrComputeHashCode() => _hashCode ??= ComputeHashCode();
+
+    private int ComputeHashCode()
         => HashCode.Combine(Table, SelectExpression);
 }

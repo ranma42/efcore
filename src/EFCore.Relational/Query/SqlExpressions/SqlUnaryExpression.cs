@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class SqlUnaryExpression : SqlExpression
 {
     private static ConstructorInfo? _quotingConstructor;
+    private int? _hashCode;
 
     private static readonly ISet<ExpressionType> AllowedOperators = new HashSet<ExpressionType>
     {
@@ -126,6 +127,7 @@ public class SqlUnaryExpression : SqlExpression
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is SqlUnaryExpression sqlUnaryExpression
+                && GetOrComputeHashCode() == sqlUnaryExpression.GetOrComputeHashCode()
                 && Equals(sqlUnaryExpression));
 
     private bool Equals(SqlUnaryExpression sqlUnaryExpression)
@@ -135,5 +137,10 @@ public class SqlUnaryExpression : SqlExpression
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => GetOrComputeHashCode();
+
+    private int GetOrComputeHashCode() => _hashCode ??= ComputeHashCode();
+
+    private int ComputeHashCode()
         => HashCode.Combine(base.GetHashCode(), OperatorType, Operand);
 }

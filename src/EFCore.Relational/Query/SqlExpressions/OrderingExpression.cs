@@ -16,6 +16,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class OrderingExpression : Expression, IRelationalQuotableExpression, IPrintableExpression
 {
     private static ConstructorInfo? _quotingConstructor;
+    private int? _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="OrderingExpression" /> class.
@@ -81,6 +82,7 @@ public class OrderingExpression : Expression, IRelationalQuotableExpression, IPr
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is OrderingExpression orderingExpression
+                && GetOrComputeHashCode() == orderingExpression.GetOrComputeHashCode()
                 && Equals(orderingExpression));
 
     private bool Equals(OrderingExpression orderingExpression)
@@ -89,5 +91,10 @@ public class OrderingExpression : Expression, IRelationalQuotableExpression, IPr
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => GetOrComputeHashCode();
+
+    private int GetOrComputeHashCode() => _hashCode ??= ComputeHashCode();
+
+    private int ComputeHashCode()
         => HashCode.Combine(Expression, IsAscending);
 }

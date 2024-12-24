@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class AtTimeZoneExpression : SqlExpression
 {
     private static ConstructorInfo? _quotingConstructor;
+    private int? _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="AtTimeZoneExpression" /> class.
@@ -90,6 +91,7 @@ public class AtTimeZoneExpression : SqlExpression
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is AtTimeZoneExpression atTimeZoneExpression
+                && GetOrComputeHashCode() == atTimeZoneExpression.GetOrComputeHashCode()
                 && Equals(atTimeZoneExpression));
 
     private bool Equals(AtTimeZoneExpression atTimeZoneExpression)
@@ -99,5 +101,10 @@ public class AtTimeZoneExpression : SqlExpression
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => GetOrComputeHashCode();
+
+    private int GetOrComputeHashCode() => _hashCode ??= ComputeHashCode();
+
+    private int ComputeHashCode()
         => HashCode.Combine(base.GetHashCode(), Operand, TimeZone);
 }

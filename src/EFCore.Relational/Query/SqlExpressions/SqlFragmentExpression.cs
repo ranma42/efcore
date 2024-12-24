@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class SqlFragmentExpression : SqlExpression
 {
     private static ConstructorInfo? _quotingConstructor;
+    private int? _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="SqlFragmentExpression" /> class.
@@ -53,6 +54,7 @@ public class SqlFragmentExpression : SqlExpression
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is SqlFragmentExpression sqlFragmentExpression
+                && GetOrComputeHashCode() == sqlFragmentExpression.GetOrComputeHashCode()
                 && Equals(sqlFragmentExpression));
 
     private bool Equals(SqlFragmentExpression sqlFragmentExpression)
@@ -62,5 +64,10 @@ public class SqlFragmentExpression : SqlExpression
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => GetOrComputeHashCode();
+
+    private int GetOrComputeHashCode() => _hashCode ??= ComputeHashCode();
+
+    private int ComputeHashCode()
         => HashCode.Combine(base.GetHashCode(), Sql);
 }

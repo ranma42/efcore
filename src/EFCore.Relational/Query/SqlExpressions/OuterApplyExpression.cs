@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class OuterApplyExpression : JoinExpressionBase
 {
     private static ConstructorInfo? _quotingConstructor;
+    private int? _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="OuterApplyExpression" /> class.
@@ -78,6 +79,7 @@ public class OuterApplyExpression : JoinExpressionBase
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is OuterApplyExpression outerApplyExpression
+                && GetOrComputeHashCode() == outerApplyExpression.GetOrComputeHashCode()
                 && Equals(outerApplyExpression));
 
     private bool Equals(OuterApplyExpression outerApplyExpression)
@@ -85,5 +87,10 @@ public class OuterApplyExpression : JoinExpressionBase
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => GetOrComputeHashCode();
+
+    private int GetOrComputeHashCode() => _hashCode ??= ComputeHashCode();
+
+    private int ComputeHashCode()
         => base.GetHashCode();
 }

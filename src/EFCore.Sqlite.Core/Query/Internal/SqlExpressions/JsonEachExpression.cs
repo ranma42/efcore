@@ -23,6 +23,7 @@ namespace Microsoft.EntityFrameworkCore.Sqlite.Query.Internal;
 public class JsonEachExpression : TableValuedFunctionExpression
 {
     private static ConstructorInfo? _quotingConstructor;
+    private int? _hashCode;
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -192,7 +193,10 @@ public class JsonEachExpression : TableValuedFunctionExpression
 
     /// <inheritdoc />
     public override bool Equals(object? obj)
-        => ReferenceEquals(this, obj) || (obj is JsonEachExpression jsonEachExpression && Equals(jsonEachExpression));
+        => ReferenceEquals(this, obj) ||
+            (obj is JsonEachExpression jsonEachExpression
+                && GetOrComputeHashCode() == jsonEachExpression.GetOrComputeHashCode()
+                && Equals(jsonEachExpression));
 
     private bool Equals(JsonEachExpression other)
         => base.Equals(other)
@@ -201,5 +205,10 @@ public class JsonEachExpression : TableValuedFunctionExpression
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => GetOrComputeHashCode();
+
+    private int GetOrComputeHashCode() => _hashCode ??= ComputeHashCode();
+
+    private int ComputeHashCode()
         => base.GetHashCode();
 }

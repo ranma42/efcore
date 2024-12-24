@@ -9,6 +9,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public sealed class SqlParameterExpression : SqlExpression
 {
     private static ConstructorInfo? _quotingConstructor;
+    private int? _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="SqlParameterExpression" /> class.
@@ -99,6 +100,7 @@ public sealed class SqlParameterExpression : SqlExpression
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is SqlParameterExpression sqlParameterExpression
+                && GetOrComputeHashCode() == sqlParameterExpression.GetOrComputeHashCode()
                 && Equals(sqlParameterExpression));
 
     private bool Equals(SqlParameterExpression sqlParameterExpression)
@@ -107,5 +109,10 @@ public sealed class SqlParameterExpression : SqlExpression
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => GetOrComputeHashCode();
+
+    private int GetOrComputeHashCode() => _hashCode ??= ComputeHashCode();
+
+    private int ComputeHashCode()
         => HashCode.Combine(base.GetHashCode(), Name);
 }

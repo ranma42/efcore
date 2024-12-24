@@ -16,6 +16,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public sealed class ProjectionExpression : Expression, IRelationalQuotableExpression, IPrintableExpression
 {
     private static ConstructorInfo? _quotingConstructor;
+    private int? _hashCode;
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -87,6 +88,7 @@ public sealed class ProjectionExpression : Expression, IRelationalQuotableExpres
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is ProjectionExpression projectionExpression
+                && GetOrComputeHashCode() == projectionExpression.GetOrComputeHashCode()
                 && Equals(projectionExpression));
 
     private bool Equals(ProjectionExpression projectionExpression)
@@ -94,5 +96,10 @@ public sealed class ProjectionExpression : Expression, IRelationalQuotableExpres
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => GetOrComputeHashCode();
+
+    private int GetOrComputeHashCode() => _hashCode ??= ComputeHashCode();
+
+    private int ComputeHashCode()
         => HashCode.Combine(base.GetHashCode(), Alias, Expression);
 }

@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class LeftJoinExpression : PredicateJoinExpressionBase
 {
     private static ConstructorInfo? _quotingConstructor;
+    private int? _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="LeftJoinExpression" /> class.
@@ -95,6 +96,7 @@ public class LeftJoinExpression : PredicateJoinExpressionBase
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is LeftJoinExpression leftJoinExpression
+                && GetOrComputeHashCode() == leftJoinExpression.GetOrComputeHashCode()
                 && Equals(leftJoinExpression));
 
     private bool Equals(LeftJoinExpression leftJoinExpression)
@@ -102,5 +104,10 @@ public class LeftJoinExpression : PredicateJoinExpressionBase
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => GetOrComputeHashCode();
+
+    private int GetOrComputeHashCode() => _hashCode ??= ComputeHashCode();
+
+    private int ComputeHashCode()
         => base.GetHashCode();
 }

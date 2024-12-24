@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class ExistsExpression : SqlExpression
 {
     private static ConstructorInfo? _quotingConstructor;
+    private int? _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="ExistsExpression" /> class.
@@ -76,6 +77,7 @@ public class ExistsExpression : SqlExpression
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is ExistsExpression existsExpression
+                && GetOrComputeHashCode() == existsExpression.GetOrComputeHashCode()
                 && Equals(existsExpression));
 
     private bool Equals(ExistsExpression existsExpression)
@@ -84,5 +86,10 @@ public class ExistsExpression : SqlExpression
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => GetOrComputeHashCode();
+
+    private int GetOrComputeHashCode() => _hashCode ??= ComputeHashCode();
+
+    private int ComputeHashCode()
         => HashCode.Combine(base.GetHashCode(), Subquery);
 }

@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class JsonScalarExpression : SqlExpression
 {
     private static ConstructorInfo? _quotingConstructor;
+    private int? _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="JsonScalarExpression" /> class.
@@ -148,10 +149,16 @@ public class JsonScalarExpression : SqlExpression
     /// <inheritdoc />
     public override bool Equals(object? obj)
         => obj is JsonScalarExpression jsonScalarExpression
+            && GetOrComputeHashCode() == jsonScalarExpression.GetOrComputeHashCode()
             && Json.Equals(jsonScalarExpression.Json)
             && Path.SequenceEqual(jsonScalarExpression.Path);
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => GetOrComputeHashCode();
+
+    private int GetOrComputeHashCode() => _hashCode ??= ComputeHashCode();
+
+    private int ComputeHashCode()
         => HashCode.Combine(base.GetHashCode(), Json, Path);
 }

@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class CaseExpression : SqlExpression
 {
     private readonly List<CaseWhenClause> _whenClauses = [];
+    private int? _hashCode;
 
     private static ConstructorInfo? _quotingConstructorWithOperand;
     private static ConstructorInfo? _quotingConstructorWithoutOperand;
@@ -174,6 +175,7 @@ public class CaseExpression : SqlExpression
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is CaseExpression caseExpression
+                && GetOrComputeHashCode() == caseExpression.GetOrComputeHashCode()
                 && Equals(caseExpression));
 
     private bool Equals(CaseExpression caseExpression)
@@ -184,6 +186,11 @@ public class CaseExpression : SqlExpression
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => GetOrComputeHashCode();
+
+    private int GetOrComputeHashCode() => _hashCode ??= ComputeHashCode();
+
+    private int ComputeHashCode()
     {
         var hash = new HashCode();
         hash.Add(base.GetHashCode());

@@ -17,6 +17,8 @@ public class FromSqlExpression : TableExpressionBase, ITableBasedExpression
     private static ConstructorInfo? _quotingConstructor, _queryParameterConstructor;
     private static MethodInfo? _constantExpressionFactoryMethod;
 
+    private int? _hashCode;
+
     /// <summary>
     ///     Creates a new instance of the <see cref="FromSqlExpression" /> class.
     /// </summary>
@@ -162,6 +164,7 @@ public class FromSqlExpression : TableExpressionBase, ITableBasedExpression
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is FromSqlExpression fromSqlExpression
+                && GetOrComputeHashCode() == fromSqlExpression.GetOrComputeHashCode()
                 && Equals(fromSqlExpression));
 
     private bool Equals(FromSqlExpression fromSqlExpression)
@@ -172,5 +175,10 @@ public class FromSqlExpression : TableExpressionBase, ITableBasedExpression
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => GetOrComputeHashCode();
+
+    private int GetOrComputeHashCode() => _hashCode ??= ComputeHashCode();
+
+    private int ComputeHashCode()
         => HashCode.Combine(base.GetHashCode(), Table, Sql, Arguments);
 }

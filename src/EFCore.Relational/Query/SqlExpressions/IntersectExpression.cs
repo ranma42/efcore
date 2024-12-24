@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class IntersectExpression : SetOperationBase
 {
     private static ConstructorInfo? _quotingConstructor;
+    private int? _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="IntersectExpression" /> class.
@@ -128,6 +129,7 @@ public class IntersectExpression : SetOperationBase
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is IntersectExpression intersectExpression
+                && GetOrComputeHashCode() == intersectExpression.GetOrComputeHashCode()
                 && Equals(intersectExpression));
 
     private bool Equals(IntersectExpression intersectExpression)
@@ -135,5 +137,10 @@ public class IntersectExpression : SetOperationBase
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => GetOrComputeHashCode();
+
+    private int GetOrComputeHashCode() => _hashCode ??= ComputeHashCode();
+
+    private int ComputeHashCode()
         => HashCode.Combine(base.GetHashCode(), GetType());
 }

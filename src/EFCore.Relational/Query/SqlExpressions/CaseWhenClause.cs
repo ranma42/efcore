@@ -14,6 +14,8 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 /// </summary>
 public class CaseWhenClause
 {
+    private int? _hashCode;
+
     /// <summary>
     ///     Creates a new instance of the <see cref="CaseWhenClause" /> class.
     /// </summary>
@@ -40,6 +42,7 @@ public class CaseWhenClause
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is CaseWhenClause caseWhenClause
+                && GetOrComputeHashCode() == caseWhenClause.GetOrComputeHashCode()
                 && Equals(caseWhenClause));
 
     private bool Equals(CaseWhenClause caseWhenClause)
@@ -48,5 +51,10 @@ public class CaseWhenClause
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => GetOrComputeHashCode();
+
+    private int GetOrComputeHashCode() => _hashCode ??= ComputeHashCode();
+
+    private int ComputeHashCode()
         => HashCode.Combine(Test, Result);
 }
