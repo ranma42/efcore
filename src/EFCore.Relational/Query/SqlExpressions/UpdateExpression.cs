@@ -18,6 +18,8 @@ public sealed class UpdateExpression : Expression, IRelationalQuotableExpression
     private static ConstructorInfo? _quotingConstructor;
     private static ConstructorInfo? _columnValueSetterQuotingConstructor;
 
+    private readonly int _hashCode;
+
     /// <summary>
     ///     Creates a new instance of the <see cref="UpdateExpression" /> class.
     /// </summary>
@@ -49,6 +51,8 @@ public sealed class UpdateExpression : Expression, IRelationalQuotableExpression
         SelectExpression = selectExpression;
         ColumnValueSetters = columnValueSetters;
         Tags = tags;
+
+        _hashCode = ComputeHashCode();
     }
 
     /// <summary>
@@ -190,6 +194,7 @@ public sealed class UpdateExpression : Expression, IRelationalQuotableExpression
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is UpdateExpression updateExpression
+                && _hashCode == updateExpression._hashCode
                 && Equals(updateExpression));
 
     private bool Equals(UpdateExpression updateExpression)
@@ -199,6 +204,9 @@ public sealed class UpdateExpression : Expression, IRelationalQuotableExpression
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => _hashCode;
+
+    private int ComputeHashCode()
     {
         var hash = new HashCode();
         hash.Add(Table);

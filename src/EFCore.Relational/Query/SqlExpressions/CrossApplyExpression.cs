@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class CrossApplyExpression : JoinExpressionBase
 {
     private static ConstructorInfo? _quotingConstructor;
+    private readonly int _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="CrossApplyExpression" /> class.
@@ -28,6 +29,7 @@ public class CrossApplyExpression : JoinExpressionBase
     private CrossApplyExpression(TableExpressionBase table, IReadOnlyDictionary<string, IAnnotation>? annotations)
         : base(table, prunable: false, annotations)
     {
+        _hashCode = ComputeHashCode();
     }
 
     /// <inheritdoc />
@@ -71,6 +73,7 @@ public class CrossApplyExpression : JoinExpressionBase
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is CrossApplyExpression crossApplyExpression
+                && _hashCode == crossApplyExpression._hashCode
                 && Equals(crossApplyExpression));
 
     private bool Equals(CrossApplyExpression crossApplyExpression)
@@ -78,5 +81,8 @@ public class CrossApplyExpression : JoinExpressionBase
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => _hashCode;
+
+    private int ComputeHashCode()
         => base.GetHashCode();
 }

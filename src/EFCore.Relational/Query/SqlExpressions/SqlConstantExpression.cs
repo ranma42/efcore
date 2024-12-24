@@ -17,6 +17,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class SqlConstantExpression : SqlExpression
 {
     private static ConstructorInfo? _quotingConstructor;
+    private readonly int _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="SqlConstantExpression" /> class.
@@ -26,7 +27,11 @@ public class SqlConstantExpression : SqlExpression
     /// <param name="typeMapping">The <see cref="RelationalTypeMapping" /> associated with the expression.</param>
     public SqlConstantExpression(object? value, Type type, RelationalTypeMapping? typeMapping)
         : base(type.UnwrapNullableType(), typeMapping)
-        => Value = value;
+    {
+        Value = value;
+        
+        _hashCode = ComputeHashCode();
+    }
 
     /// <summary>
     ///     Creates a new instance of the <see cref="SqlConstantExpression" /> class.
@@ -90,6 +95,7 @@ public class SqlConstantExpression : SqlExpression
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is SqlConstantExpression sqlConstantExpression
+                && _hashCode == sqlConstantExpression._hashCode
                 && Equals(sqlConstantExpression));
 
     private bool Equals(SqlConstantExpression sqlConstantExpression)
@@ -127,5 +133,8 @@ public class SqlConstantExpression : SqlExpression
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => _hashCode;
+
+    private int ComputeHashCode()
         => HashCode.Combine(base.GetHashCode(), Value);
 }

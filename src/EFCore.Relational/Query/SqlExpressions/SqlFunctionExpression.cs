@@ -17,6 +17,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class SqlFunctionExpression : SqlExpression
 {
     private static ConstructorInfo? _quotingConstructor;
+    private readonly int _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="SqlFunctionExpression" /> class which represents a built-in niladic function.
@@ -204,6 +205,8 @@ public class SqlFunctionExpression : SqlExpression
                 )
             );
         }
+
+        _hashCode = ComputeHashCode();
     }
 
     /// <summary>
@@ -403,6 +406,7 @@ public class SqlFunctionExpression : SqlExpression
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is SqlFunctionExpression sqlFunctionExpression
+                && _hashCode == sqlFunctionExpression._hashCode
                 && Equals(sqlFunctionExpression));
 
     private bool Equals(SqlFunctionExpression sqlFunctionExpression)
@@ -418,6 +422,9 @@ public class SqlFunctionExpression : SqlExpression
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => _hashCode;
+
+    private int ComputeHashCode()
     {
         var hash = new HashCode();
         hash.Add(base.GetHashCode());

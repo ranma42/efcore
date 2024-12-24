@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class InnerJoinExpression : PredicateJoinExpressionBase
 {
     private static ConstructorInfo? _quotingConstructor;
+    private readonly int _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="InnerJoinExpression" /> class.
@@ -41,6 +42,7 @@ public class InnerJoinExpression : PredicateJoinExpressionBase
         IReadOnlyDictionary<string, IAnnotation>? annotations)
         : base(table, joinPredicate, prunable, annotations)
     {
+        _hashCode = ComputeHashCode();
     }
 
     /// <summary>
@@ -95,6 +97,7 @@ public class InnerJoinExpression : PredicateJoinExpressionBase
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is InnerJoinExpression innerJoinExpression
+                && _hashCode == innerJoinExpression._hashCode
                 && Equals(innerJoinExpression));
 
     private bool Equals(InnerJoinExpression innerJoinExpression)
@@ -102,5 +105,8 @@ public class InnerJoinExpression : PredicateJoinExpressionBase
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => _hashCode;
+
+    private int ComputeHashCode()
         => base.GetHashCode();
 }

@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class TableValuedFunctionExpression : TableExpressionBase, ITableBasedExpression
 {
     private static ConstructorInfo? _quotingConstructor1, _quotingConstructor2;
+    private readonly int _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="TableValuedFunctionExpression" /> class.
@@ -68,6 +69,8 @@ public class TableValuedFunctionExpression : TableExpressionBase, ITableBasedExp
         Schema = schema;
         IsBuiltIn = builtIn;
         Arguments = arguments;
+
+        _hashCode = ComputeHashCode();
     }
 
     /// <summary>
@@ -189,6 +192,7 @@ public class TableValuedFunctionExpression : TableExpressionBase, ITableBasedExp
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is TableValuedFunctionExpression tableValuedFunctionExpression
+                && _hashCode == tableValuedFunctionExpression._hashCode
                 && Equals(tableValuedFunctionExpression));
 
     private bool Equals(TableValuedFunctionExpression tableValuedFunctionExpression)
@@ -201,6 +205,9 @@ public class TableValuedFunctionExpression : TableExpressionBase, ITableBasedExp
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => _hashCode;
+
+    private int ComputeHashCode()
     {
         var hash = new HashCode();
         hash.Add(base.GetHashCode());

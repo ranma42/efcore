@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class DistinctExpression : SqlExpression
 {
     private static ConstructorInfo? _quotingConstructor;
+    private readonly int _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="DistinctExpression" /> class.
@@ -26,6 +27,8 @@ public class DistinctExpression : SqlExpression
         Check.NotNull(operand, nameof(operand));
 
         Operand = operand;
+
+        _hashCode = ComputeHashCode();
     }
 
     /// <summary>
@@ -77,6 +80,7 @@ public class DistinctExpression : SqlExpression
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is DistinctExpression distinctExpression
+                && _hashCode == distinctExpression._hashCode
                 && Equals(distinctExpression));
 
     private bool Equals(DistinctExpression distinctExpression)
@@ -85,5 +89,8 @@ public class DistinctExpression : SqlExpression
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => _hashCode;
+
+    private int ComputeHashCode()
         => HashCode.Combine(base.GetHashCode(), Operand);
 }

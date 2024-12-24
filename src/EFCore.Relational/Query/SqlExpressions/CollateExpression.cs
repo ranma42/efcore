@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class CollateExpression : SqlExpression
 {
     private static ConstructorInfo? _quotingConstructor;
+    private readonly int _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="CollateExpression" /> class.
@@ -26,6 +27,8 @@ public class CollateExpression : SqlExpression
     {
         Operand = operand;
         Collation = collation;
+
+        _hashCode = ComputeHashCode();
     }
 
     /// <summary>
@@ -74,6 +77,7 @@ public class CollateExpression : SqlExpression
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is CollateExpression collateExpression
+                && _hashCode == collateExpression._hashCode
                 && Equals(collateExpression));
 
     private bool Equals(CollateExpression collateExpression)
@@ -83,5 +87,8 @@ public class CollateExpression : SqlExpression
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => _hashCode;
+
+    private int ComputeHashCode()
         => HashCode.Combine(base.GetHashCode(), Operand, Collation);
 }

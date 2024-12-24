@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Sqlite.Query.Internal;
 public class GlobExpression : SqlExpression
 {
     private static ConstructorInfo? _quotingConstructor;
+    private readonly int _hashCode;
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -27,6 +28,8 @@ public class GlobExpression : SqlExpression
     {
         Match = match;
         Pattern = pattern;
+
+        _hashCode = ComputeHashCode();
     }
 
     /// <summary>
@@ -111,6 +114,7 @@ public class GlobExpression : SqlExpression
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is GlobExpression globExpression
+                && _hashCode == globExpression._hashCode
                 && Equals(globExpression));
 
     private bool Equals(GlobExpression globExpression)
@@ -125,5 +129,8 @@ public class GlobExpression : SqlExpression
     ///     doing so can result in application failures when updating to a new Entity Framework Core release.
     /// </summary>
     public override int GetHashCode()
+        => _hashCode;
+
+    private int ComputeHashCode()
         => HashCode.Combine(base.GetHashCode(), Match, Pattern);
 }

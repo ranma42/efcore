@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class SqlBinaryExpression : SqlExpression
 {
     private static ConstructorInfo? _quotingConstructor;
+    private readonly int _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="SqlBinaryExpression" /> class.
@@ -42,6 +43,8 @@ public class SqlBinaryExpression : SqlExpression
         OperatorType = operatorType;
         Left = left;
         Right = right;
+
+        _hashCode = ComputeHashCode();
     }
 
     /// <summary>
@@ -160,6 +163,7 @@ public class SqlBinaryExpression : SqlExpression
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is SqlBinaryExpression sqlBinaryExpression
+                && _hashCode == sqlBinaryExpression._hashCode
                 && Equals(sqlBinaryExpression));
 
     private bool Equals(SqlBinaryExpression sqlBinaryExpression)
@@ -170,5 +174,8 @@ public class SqlBinaryExpression : SqlExpression
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => _hashCode;
+
+    private int ComputeHashCode()
         => HashCode.Combine(base.GetHashCode(), OperatorType, Left, Right);
 }

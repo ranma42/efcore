@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class ScalarSubqueryExpression : SqlExpression
 {
     private static ConstructorInfo? _quotingConstructor;
+    private readonly int _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="ScalarSubqueryExpression" /> class.
@@ -26,7 +27,11 @@ public class ScalarSubqueryExpression : SqlExpression
 
     private ScalarSubqueryExpression(SelectExpression subquery, RelationalTypeMapping? typeMapping)
         : base(Verify(subquery).Projection[0].Type, typeMapping)
-        => Subquery = subquery;
+    {
+        Subquery = subquery;
+
+        _hashCode = ComputeHashCode();
+    }
 
     private static SelectExpression Verify(SelectExpression selectExpression)
     {
@@ -91,6 +96,7 @@ public class ScalarSubqueryExpression : SqlExpression
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is ScalarSubqueryExpression scalarSubqueryExpression
+                && _hashCode == scalarSubqueryExpression._hashCode
                 && Equals(scalarSubqueryExpression));
 
     private bool Equals(ScalarSubqueryExpression scalarSubqueryExpression)
@@ -99,5 +105,8 @@ public class ScalarSubqueryExpression : SqlExpression
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => _hashCode;
+
+    private int ComputeHashCode()
         => HashCode.Combine(base.GetHashCode(), Subquery);
 }

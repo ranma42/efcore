@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class SqlFragmentExpression : SqlExpression
 {
     private static ConstructorInfo? _quotingConstructor;
+    private readonly int _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="SqlFragmentExpression" /> class.
@@ -24,7 +25,11 @@ public class SqlFragmentExpression : SqlExpression
     /// <param name="typeMapping">The <see cref="RelationalTypeMapping" /> associated with the expression.</param>
     public SqlFragmentExpression(string sql, Type? type = null, RelationalTypeMapping? typeMapping = null)
         : base(type ?? typeof(object), typeMapping)
-        => Sql = sql;
+    {
+        Sql = sql;
+
+        _hashCode = ComputeHashCode();
+    }
 
     /// <summary>
     ///     The string token to print in SQL tree.
@@ -53,6 +58,7 @@ public class SqlFragmentExpression : SqlExpression
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is SqlFragmentExpression sqlFragmentExpression
+                && _hashCode == sqlFragmentExpression._hashCode
                 && Equals(sqlFragmentExpression));
 
     private bool Equals(SqlFragmentExpression sqlFragmentExpression)
@@ -62,5 +68,8 @@ public class SqlFragmentExpression : SqlExpression
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => _hashCode;
+
+    private int ComputeHashCode()
         => HashCode.Combine(base.GetHashCode(), Sql);
 }

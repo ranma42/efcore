@@ -14,6 +14,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public sealed class TableExpression : TableExpressionBase, ITableBasedExpression
 {
     private static ConstructorInfo? _quotingConstructor;
+    private readonly int _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="TableExpression" /> class.
@@ -36,6 +37,8 @@ public sealed class TableExpression : TableExpressionBase, ITableBasedExpression
         Name = table.Name;
         Schema = table.Schema;
         Table = table;
+
+        _hashCode = ComputeHashCode();
     }
 
     /// <summary>
@@ -103,6 +106,7 @@ public sealed class TableExpression : TableExpressionBase, ITableBasedExpression
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is TableExpression fromSqlExpression
+                && _hashCode == fromSqlExpression._hashCode
                 && Equals(fromSqlExpression));
 
     private bool Equals(TableExpression fromSqlExpression)
@@ -111,5 +115,8 @@ public sealed class TableExpression : TableExpressionBase, ITableBasedExpression
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => _hashCode;
+
+    private int ComputeHashCode()
         => HashCode.Combine(base.GetHashCode(), Name, Schema);
 }

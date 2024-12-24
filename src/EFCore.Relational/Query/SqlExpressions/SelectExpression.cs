@@ -51,6 +51,8 @@ public sealed partial class SelectExpression : TableExpressionBase
     // Pushdown should null it out as if GroupBy was present was pushed down.
     private List<(ColumnExpression Column, ValueComparer Comparer)>? _preGroupByIdentifier;
 
+    private readonly int _hashCode;
+
     private static ConstructorInfo? _quotingConstructor;
 
     /// <summary>
@@ -4511,6 +4513,7 @@ public sealed partial class SelectExpression : TableExpressionBase
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is SelectExpression selectExpression
+                && _hashCode == selectExpression._hashCode
                 && Equals(selectExpression));
 
     // Note that we vary our Equals/GetHashCode logic based on whether the SelectExpression is mutable or not; in the former case we use
@@ -4537,6 +4540,9 @@ public sealed partial class SelectExpression : TableExpressionBase
     // ReSharper disable NonReadonlyMemberInGetHashCode
     /// <inheritdoc />
     public override int GetHashCode()
+        => _hashCode;
+
+    private int ComputeHashCode()
     {
         if (IsMutable)
         {

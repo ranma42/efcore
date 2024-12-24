@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class RowNumberExpression : SqlExpression
 {
     private static ConstructorInfo? _quotingConstructor;
+    private readonly int _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="RowNumberExpression" /> class.
@@ -30,6 +31,8 @@ public class RowNumberExpression : SqlExpression
     {
         Partitions = partitions ?? [];
         Orderings = orderings;
+
+        _hashCode = ComputeHashCode();
     }
 
     /// <summary>
@@ -112,6 +115,7 @@ public class RowNumberExpression : SqlExpression
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is RowNumberExpression rowNumberExpression
+                && _hashCode == rowNumberExpression._hashCode
                 && Equals(rowNumberExpression));
 
     private bool Equals(RowNumberExpression rowNumberExpression)
@@ -121,6 +125,9 @@ public class RowNumberExpression : SqlExpression
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => _hashCode;
+
+    private int ComputeHashCode()
     {
         var hash = new HashCode();
         hash.Add(base.GetHashCode());

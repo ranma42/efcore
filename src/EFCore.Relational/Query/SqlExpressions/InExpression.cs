@@ -18,6 +18,8 @@ public class InExpression : SqlExpression
     private static ConstructorInfo? _quotingConstructorWithValues;
     private static ConstructorInfo? _quotingConstructorWithValuesParameter;
 
+    private readonly int _hashCode;
+
     /// <summary>
     ///     Creates a new instance of the <see cref="InExpression" /> class, representing a SQL <c>IN</c> expression with a subquery.
     /// </summary>
@@ -82,6 +84,8 @@ public class InExpression : SqlExpression
         Subquery = subquery;
         Values = values;
         ValuesParameter = valuesParameter;
+
+        _hashCode = ComputeHashCode();
     }
 
     /// <summary>
@@ -270,6 +274,7 @@ public class InExpression : SqlExpression
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is InExpression inExpression
+                && _hashCode == inExpression._hashCode
                 && Equals(inExpression));
 
     private bool Equals(InExpression inExpression)
@@ -282,6 +287,9 @@ public class InExpression : SqlExpression
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => _hashCode;
+
+    private int ComputeHashCode()
     {
         var hash = new HashCode();
         hash.Add(base.GetHashCode());

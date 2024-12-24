@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class ExceptExpression : SetOperationBase
 {
     private static ConstructorInfo? _quotingConstructor;
+    private readonly int _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="ExceptExpression" /> class.
@@ -47,6 +48,7 @@ public class ExceptExpression : SetOperationBase
         IReadOnlyDictionary<string, IAnnotation>? annotations)
         : base(alias, source1, source2, distinct, annotations)
     {
+        _hashCode = ComputeHashCode();
     }
 
     /// <inheritdoc />
@@ -131,6 +133,7 @@ public class ExceptExpression : SetOperationBase
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is ExceptExpression exceptExpression
+                && _hashCode == exceptExpression._hashCode
                 && Equals(exceptExpression));
 
     private bool Equals(ExceptExpression exceptExpression)
@@ -138,5 +141,8 @@ public class ExceptExpression : SetOperationBase
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => _hashCode;
+
+    private int ComputeHashCode()
         => HashCode.Combine(base.GetHashCode(), GetType());
 }

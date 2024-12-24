@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class IntersectExpression : SetOperationBase
 {
     private static ConstructorInfo? _quotingConstructor;
+    private readonly int _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="IntersectExpression" /> class.
@@ -47,6 +48,7 @@ public class IntersectExpression : SetOperationBase
         IReadOnlyDictionary<string, IAnnotation>? annotations)
         : base(alias, source1, source2, distinct, annotations)
     {
+        _hashCode = ComputeHashCode();
     }
 
     /// <inheritdoc />
@@ -128,6 +130,7 @@ public class IntersectExpression : SetOperationBase
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is IntersectExpression intersectExpression
+                && _hashCode == intersectExpression._hashCode
                 && Equals(intersectExpression));
 
     private bool Equals(IntersectExpression intersectExpression)
@@ -135,5 +138,8 @@ public class IntersectExpression : SetOperationBase
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => _hashCode;
+
+    private int ComputeHashCode()
         => HashCode.Combine(base.GetHashCode(), GetType());
 }

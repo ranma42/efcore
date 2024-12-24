@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class UnionExpression : SetOperationBase
 {
     private static ConstructorInfo? _quotingConstructor;
+    private readonly int _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="UnionExpression" /> class.
@@ -47,6 +48,7 @@ public class UnionExpression : SetOperationBase
         IReadOnlyDictionary<string, IAnnotation>? annotations)
         : base(alias, source1, source2, distinct, annotations)
     {
+        _hashCode = ComputeHashCode();
     }
 
     /// <inheritdoc />
@@ -128,6 +130,7 @@ public class UnionExpression : SetOperationBase
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is UnionExpression unionExpression
+                && _hashCode == unionExpression._hashCode
                 && Equals(unionExpression));
 
     private bool Equals(UnionExpression unionExpression)
@@ -135,5 +138,8 @@ public class UnionExpression : SetOperationBase
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => _hashCode;
+
+    private int ComputeHashCode()
         => HashCode.Combine(base.GetHashCode(), GetType());
 }

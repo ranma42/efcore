@@ -14,6 +14,7 @@ namespace Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
 public class SqlServerAggregateFunctionExpression : SqlExpression
 {
     private static ConstructorInfo? _quotingConstructor;
+    private readonly int _hashCode;
 
     /// <summary>
     ///     This is an internal API that supports the Entity Framework Core infrastructure and not subject to
@@ -36,6 +37,8 @@ public class SqlServerAggregateFunctionExpression : SqlExpression
         Orderings = orderings;
         IsNullable = nullable;
         ArgumentsPropagateNullability = argumentsPropagateNullability.ToList();
+
+        _hashCode = ComputeHashCode();
     }
 
     /// <summary>
@@ -226,6 +229,7 @@ public class SqlServerAggregateFunctionExpression : SqlExpression
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is SqlServerAggregateFunctionExpression sqlServerFunctionExpression
+                && _hashCode == sqlServerFunctionExpression._hashCode
                 && Equals(sqlServerFunctionExpression));
 
     private bool Equals(SqlServerAggregateFunctionExpression other)
@@ -236,6 +240,9 @@ public class SqlServerAggregateFunctionExpression : SqlExpression
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => _hashCode;
+
+    private int ComputeHashCode()
     {
         var hash = new HashCode();
         hash.Add(base.GetHashCode());

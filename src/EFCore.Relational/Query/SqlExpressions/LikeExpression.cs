@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class LikeExpression : SqlExpression
 {
     private static ConstructorInfo? _quotingConstructor;
+    private readonly int _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="LikeExpression" /> class.
@@ -33,6 +34,8 @@ public class LikeExpression : SqlExpression
         Match = match;
         Pattern = pattern;
         EscapeChar = escapeChar;
+
+        _hashCode = ComputeHashCode();
     }
 
     /// <summary>
@@ -105,6 +108,7 @@ public class LikeExpression : SqlExpression
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is LikeExpression likeExpression
+                && _hashCode == likeExpression._hashCode
                 && Equals(likeExpression));
 
     private bool Equals(LikeExpression likeExpression)
@@ -117,5 +121,8 @@ public class LikeExpression : SqlExpression
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => _hashCode;
+
+    private int ComputeHashCode()
         => HashCode.Combine(base.GetHashCode(), Match, Pattern, EscapeChar);
 }

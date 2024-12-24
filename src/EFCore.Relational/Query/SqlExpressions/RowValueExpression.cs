@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class RowValueExpression : SqlExpression
 {
     private static ConstructorInfo? _quotingConstructor;
+    private readonly int _hashCode;
 
     /// <summary>
     ///     The values of this row.
@@ -31,6 +32,8 @@ public class RowValueExpression : SqlExpression
         Check.NotEmpty(values, nameof(values));
 
         Values = values;
+
+        _hashCode = ComputeHashCode();
     }
 
     /// <inheritdoc />
@@ -76,14 +79,18 @@ public class RowValueExpression : SqlExpression
 
     /// <inheritdoc />
     public override bool Equals(object? obj)
-        => obj != null
-            && (ReferenceEquals(this, obj)
-                || obj is RowValueExpression other
-                && Equals(other));
+        => obj is RowValueExpression other
+            && _hashCode == other._hashCode
+            && Equals(other);
 
-    private bool Equals(RowValueExpression other)
+    private bool Equals(RowValueExpression? other)
     {
-        if (!base.Equals(other) || other.Values.Count != Values.Count)
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
+        if (other is null || !base.Equals(other) || other.Values.Count != Values.Count)
         {
             return false;
         }
@@ -101,6 +108,9 @@ public class RowValueExpression : SqlExpression
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => _hashCode;
+
+    private int ComputeHashCode()
     {
         var hashCode = new HashCode();
 

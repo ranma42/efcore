@@ -15,6 +15,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class ValuesExpression : TableExpressionBase
 {
     private static ConstructorInfo? _quotingConstructor;
+    private readonly int _hashCode;
 
     /// <summary>
     ///     The row values for this table.
@@ -98,6 +99,8 @@ public class ValuesExpression : TableExpressionBase
         RowValues = rowValues;
         ValuesParameter = valuesParameter;
         ColumnNames = columnNames;
+
+        _hashCode = ComputeHashCode();
     }
 
     /// <summary>
@@ -232,6 +235,7 @@ public class ValuesExpression : TableExpressionBase
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is ValuesExpression valuesExpression
+                && _hashCode == valuesExpression._hashCode
                 && Equals(valuesExpression));
 
     private bool Equals(ValuesExpression? valuesExpression)
@@ -244,6 +248,9 @@ public class ValuesExpression : TableExpressionBase
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => _hashCode;
+
+    private int ComputeHashCode()
     {
         var hashCode = new HashCode();
         hashCode.Add(base.GetHashCode());

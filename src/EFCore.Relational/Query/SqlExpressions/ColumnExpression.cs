@@ -16,6 +16,7 @@ namespace Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 public class ColumnExpression : SqlExpression
 {
     private static ConstructorInfo? _quotingConstructor;
+    private readonly int _hashCode;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="ColumnExpression" /> class.
@@ -36,6 +37,8 @@ public class ColumnExpression : SqlExpression
         Name = name;
         TableAlias = tableAlias;
         IsNullable = nullable;
+
+        _hashCode = ComputeHashCode();
     }
 
     /// <summary>
@@ -96,6 +99,7 @@ public class ColumnExpression : SqlExpression
         => obj != null
             && (ReferenceEquals(this, obj)
                 || obj is ColumnExpression columnExpression
+                && _hashCode == columnExpression._hashCode
                 && Equals(columnExpression));
 
     private bool Equals(ColumnExpression columnExpression)
@@ -106,5 +110,8 @@ public class ColumnExpression : SqlExpression
 
     /// <inheritdoc />
     public override int GetHashCode()
+        => _hashCode;
+
+    private int ComputeHashCode()
         => HashCode.Combine(base.GetHashCode(), Name, TableAlias, IsNullable);
 }
