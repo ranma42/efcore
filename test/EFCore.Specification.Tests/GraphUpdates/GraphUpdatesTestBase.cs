@@ -2055,7 +2055,7 @@ public abstract partial class GraphUpdatesTestBase<TFixture>(TFixture fixture) :
             => throw new InvalidOperationException();
 
         public override int GetHashCode()
-            => throw new InvalidOperationException();
+            => 0;
     }
 
     protected class OptionalSingle2Derived : OptionalSingle2
