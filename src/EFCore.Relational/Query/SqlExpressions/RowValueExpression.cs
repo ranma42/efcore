@@ -76,16 +76,14 @@ public class RowValueExpression : SqlExpression
 
     /// <inheritdoc />
     public override bool Equals(object? obj)
-        => obj is RowValueExpression other && Equals(other);
+        => obj != null
+            && (ReferenceEquals(this, obj)
+                || obj is RowValueExpression other
+                && Equals(other));
 
-    private bool Equals(RowValueExpression? other)
+    private bool Equals(RowValueExpression other)
     {
-        if (ReferenceEquals(this, other))
-        {
-            return true;
-        }
-
-        if (other is null || !base.Equals(other) || other.Values.Count != Values.Count)
+        if (!base.Equals(other) || other.Values.Count != Values.Count)
         {
             return false;
         }

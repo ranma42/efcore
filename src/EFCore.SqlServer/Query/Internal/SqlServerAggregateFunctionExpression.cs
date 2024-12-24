@@ -223,12 +223,13 @@ public class SqlServerAggregateFunctionExpression : SqlExpression
 
     /// <inheritdoc />
     public override bool Equals(object? obj)
-        => obj is SqlServerAggregateFunctionExpression sqlServerFunctionExpression && Equals(sqlServerFunctionExpression);
+        => obj != null
+            && (ReferenceEquals(this, obj)
+                || obj is SqlServerAggregateFunctionExpression sqlServerFunctionExpression
+                && Equals(sqlServerFunctionExpression));
 
-    private bool Equals(SqlServerAggregateFunctionExpression? other)
-        => ReferenceEquals(this, other)
-            || other is not null
-            && base.Equals(other)
+    private bool Equals(SqlServerAggregateFunctionExpression other)
+        => base.Equals(other)
             && Name == other.Name
             && Arguments.SequenceEqual(other.Arguments)
             && Orderings.SequenceEqual(other.Orderings);
