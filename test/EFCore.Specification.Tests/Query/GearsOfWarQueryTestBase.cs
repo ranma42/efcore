@@ -1084,6 +1084,37 @@ public abstract class GearsOfWarQueryTestBase<TFixture>(TFixture fixture) : Quer
             elementSorter: e => e.Name);
 
     [ConditionalTheory, MemberData(nameof(IsAsyncData))]
+    public virtual Task Conditional_Nested_Navigation_With_Trivial_Member_Access(bool async)
+        => AssertQuery(
+            async,
+            ss => ss.Set<Gear>()
+                  .Where(g =>
+                    (g.HasSoulPatch
+                        ? g.CityOfBirth
+                        : (g.AssignedCity != null ? g.AssignedCity : g.CityOfBirth)
+                    ).Name != "Ephyra")
+                  .Select(g => new { g.Nickname }),
+            elementSorter: e => e.Nickname);
+
+    [ConditionalTheory, MemberData(nameof(IsAsyncData))]
+    public virtual Task Conditional_Navigation_With_Complex_Member_Access(bool async)
+        => AssertQuery(
+            async,
+            ss => ss.Set<Gear>()
+                  .Where(g => (g.AssignedCity != null ? g.AssignedCity : g.CityOfBirth).Name.Length != 6)
+                  .Select(g => new { g.Nickname }),
+            elementSorter: e => e.Nickname);
+
+    [ConditionalTheory, MemberData(nameof(IsAsyncData))]
+    public virtual Task Conditional_Navigation_With_Navigation_Member_Access(bool async)
+        => AssertQuery(
+            async,
+            ss => ss.Set<Weapon>()
+                  .Where(g => (g.SynergyWith != null ? g.SynergyWith : g).Owner.Nickname != "Marcus")
+                  .Select(g => new { g.Name }),
+            elementSorter: e => e.Name);
+
+    [ConditionalTheory, MemberData(nameof(IsAsyncData))]
     public virtual Task Singleton_Navigation_With_Member_Access(bool async)
         => AssertQuery(
             async,

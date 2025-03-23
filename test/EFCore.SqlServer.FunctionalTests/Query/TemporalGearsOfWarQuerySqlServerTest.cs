@@ -2510,6 +2510,62 @@ END = CAST(4 AS smallint)
 """);
     }
 
+    public override async Task Conditional_Nested_Navigation_With_Trivial_Member_Access(bool async)
+    {
+        await base.Conditional_Nested_Navigation_With_Trivial_Member_Access(async);
+
+        AssertSql(
+            """
+SELECT [g].[Nickname]
+FROM [Gears] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [g]
+INNER JOIN [Cities] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [c] ON [g].[CityOfBirthName] = [c].[Name]
+LEFT JOIN [Cities] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [c0] ON [g].[AssignedCityName] = [c0].[Name]
+WHERE CASE
+    WHEN [g].[HasSoulPatch] = CAST(1 AS bit) THEN [c].[Name]
+    WHEN [c0].[Name] IS NOT NULL THEN [c0].[Name]
+    ELSE [c].[Name]
+END <> N'Ephyra'
+""");
+    }
+
+    public override async Task Conditional_Navigation_With_Complex_Member_Access(bool async)
+    {
+        await base.Conditional_Navigation_With_Complex_Member_Access(async);
+
+        AssertSql(
+            """
+SELECT [g].[Nickname]
+FROM [Gears] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [g]
+LEFT JOIN [Cities] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [c] ON [g].[AssignedCityName] = [c].[Name]
+INNER JOIN [Cities] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [c0] ON [g].[CityOfBirthName] = [c0].[Name]
+WHERE CASE
+    WHEN [c].[Name] IS NOT NULL THEN CAST(LEN([c].[Name]) AS int)
+    ELSE CAST(LEN([c0].[Name]) AS int)
+END <> 6
+""");
+    }
+
+    public override async Task Conditional_Navigation_With_Navigation_Member_Access(bool async)
+    {
+        await base.Conditional_Navigation_With_Navigation_Member_Access(async);
+
+        AssertSql(
+            """
+SELECT [w].[Name]
+FROM [Weapons] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [w]
+LEFT JOIN [Weapons] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [w0] ON [w].[SynergyWithId] = [w0].[Id]
+LEFT JOIN [Gears] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [g] ON [w0].[OwnerFullName] = [g].[FullName]
+LEFT JOIN [Gears] FOR SYSTEM_TIME AS OF '2010-01-01T00:00:00.0000000' AS [g0] ON [w].[OwnerFullName] = [g0].[FullName]
+WHERE CASE
+    WHEN [w0].[Id] IS NOT NULL THEN [g].[Nickname]
+    ELSE [g0].[Nickname]
+END <> N'Marcus' OR CASE
+    WHEN [w0].[Id] IS NOT NULL THEN [g].[Nickname]
+    ELSE [g0].[Nickname]
+END IS NULL
+""");
+    }
+
     public override async Task Select_Singleton_Navigation_With_Member_Access(bool async)
     {
         await base.Select_Singleton_Navigation_With_Member_Access(async);

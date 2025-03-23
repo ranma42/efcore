@@ -1065,6 +1065,58 @@ END = CAST(4 AS smallint)
 """);
     }
 
+    public override async Task Conditional_Nested_Navigation_With_Trivial_Member_Access(bool async)
+    {
+        await base.Conditional_Nested_Navigation_With_Trivial_Member_Access(async);
+
+        AssertSql(
+            """
+SELECT [g].[Nickname]
+FROM [Gears] AS [g]
+INNER JOIN [Cities] AS [c] ON [g].[CityOfBirthName] = [c].[Name]
+LEFT JOIN [Cities] AS [c0] ON [g].[AssignedCityName] = [c0].[Name]
+WHERE CASE
+    WHEN [g].[HasSoulPatch] = CAST(1 AS bit) THEN [c].[Name]
+    WHEN [c0].[Name] IS NOT NULL THEN [c0].[Name]
+    ELSE [c].[Name]
+END <> N'Ephyra'
+""");
+    }
+
+    public override async Task Conditional_Navigation_With_Complex_Member_Access(bool async)
+    {
+        await base.Conditional_Navigation_With_Complex_Member_Access(async);
+
+        AssertSql(
+            """
+SELECT [g].[Nickname]
+FROM [Gears] AS [g]
+LEFT JOIN [Cities] AS [c] ON [g].[AssignedCityName] = [c].[Name]
+INNER JOIN [Cities] AS [c0] ON [g].[CityOfBirthName] = [c0].[Name]
+WHERE CASE
+    WHEN [c].[Name] IS NOT NULL THEN CAST(LEN([c].[Name]) AS int)
+    ELSE CAST(LEN([c0].[Name]) AS int)
+END <> 6
+""");
+    }
+
+    public override async Task Conditional_Navigation_With_Navigation_Member_Access(bool async)
+    {
+        await base.Conditional_Navigation_With_Navigation_Member_Access(async);
+
+        AssertSql(
+            """
+SELECT "g"."Nickname"
+FROM "Gears" AS "g"
+LEFT JOIN "Cities" AS "c" ON "g"."AssignedCityName" = "c"."Name"
+INNER JOIN "Cities" AS "c0" ON "g"."CityOfBirthName" = "c0"."Name"
+WHERE CASE
+    WHEN "c"."Name" IS NOT NULL THEN length("c"."Name")
+    ELSE length("c0"."Name")
+END <> 6
+""");
+    }
+
     public override async Task Select_Singleton_Navigation_With_Member_Access(bool async)
     {
         await base.Select_Singleton_Navigation_With_Member_Access(async);

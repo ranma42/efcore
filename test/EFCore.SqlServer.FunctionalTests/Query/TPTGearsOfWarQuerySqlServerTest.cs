@@ -1261,6 +1261,68 @@ END = CAST(4 AS smallint)
 """);
     }
 
+    public override async Task Conditional_Nested_Navigation_With_Trivial_Member_Access(bool async)
+    {
+        await base.Conditional_Nested_Navigation_With_Trivial_Member_Access(async);
+
+        AssertSql(
+            """
+SELECT [g].[Nickname]
+FROM [Gears] AS [g]
+INNER JOIN [Cities] AS [c] ON [g].[CityOfBirthName] = [c].[Name]
+LEFT JOIN [Cities] AS [c0] ON [g].[AssignedCityName] = [c0].[Name]
+WHERE CASE
+    WHEN [g].[HasSoulPatch] = CAST(1 AS bit) THEN [c].[Name]
+    WHEN [c0].[Name] IS NOT NULL THEN [c0].[Name]
+    ELSE [c].[Name]
+END <> N'Ephyra'
+""");
+    }
+
+    public override async Task Conditional_Navigation_With_Complex_Member_Access(bool async)
+    {
+        await base.Conditional_Navigation_With_Complex_Member_Access(async);
+
+        AssertSql(
+            """
+SELECT [g].[Nickname]
+FROM [Gears] AS [g]
+LEFT JOIN [Cities] AS [c] ON [g].[AssignedCityName] = [c].[Name]
+INNER JOIN [Cities] AS [c0] ON [g].[CityOfBirthName] = [c0].[Name]
+WHERE CASE
+    WHEN [c].[Name] IS NOT NULL THEN CAST(LEN([c].[Name]) AS int)
+    ELSE CAST(LEN([c0].[Name]) AS int)
+END <> 6
+""");
+    }
+
+    public override async Task Conditional_Navigation_With_Navigation_Member_Access(bool async)
+    {
+        await base.Conditional_Navigation_With_Navigation_Member_Access(async);
+
+        AssertSql(
+            """
+SELECT [w].[Name]
+FROM [Weapons] AS [w]
+LEFT JOIN [Weapons] AS [w0] ON [w].[SynergyWithId] = [w0].[Id]
+LEFT JOIN (
+    SELECT [g].[Nickname], [g].[FullName]
+    FROM [Gears] AS [g]
+) AS [s] ON [w0].[OwnerFullName] = [s].[FullName]
+LEFT JOIN (
+    SELECT [g0].[Nickname], [g0].[FullName]
+    FROM [Gears] AS [g0]
+) AS [s0] ON [w].[OwnerFullName] = [s0].[FullName]
+WHERE CASE
+    WHEN [w0].[Id] IS NOT NULL THEN [s].[Nickname]
+    ELSE [s0].[Nickname]
+END <> N'Marcus' OR CASE
+    WHEN [w0].[Id] IS NOT NULL THEN [s].[Nickname]
+    ELSE [s0].[Nickname]
+END IS NULL
+""");
+    }
+
     public override async Task Select_Singleton_Navigation_With_Member_Access(bool async)
     {
         await base.Select_Singleton_Navigation_With_Member_Access(async);

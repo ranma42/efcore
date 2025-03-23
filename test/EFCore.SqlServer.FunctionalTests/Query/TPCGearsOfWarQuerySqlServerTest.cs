@@ -1453,6 +1453,86 @@ END = CAST(4 AS smallint)
 """);
     }
 
+    public override async Task Conditional_Nested_Navigation_With_Trivial_Member_Access(bool async)
+    {
+        await base.Conditional_Nested_Navigation_With_Trivial_Member_Access(async);
+
+        AssertSql(
+            """
+SELECT [u].[Nickname]
+FROM (
+    SELECT [g].[Nickname], [g].[AssignedCityName], [g].[CityOfBirthName], [g].[HasSoulPatch]
+    FROM [Gears] AS [g]
+    UNION ALL
+    SELECT [o].[Nickname], [o].[AssignedCityName], [o].[CityOfBirthName], [o].[HasSoulPatch]
+    FROM [Officers] AS [o]
+) AS [u]
+INNER JOIN [Cities] AS [c] ON [u].[CityOfBirthName] = [c].[Name]
+LEFT JOIN [Cities] AS [c0] ON [u].[AssignedCityName] = [c0].[Name]
+WHERE CASE
+    WHEN [u].[HasSoulPatch] = CAST(1 AS bit) THEN [c].[Name]
+    WHEN [c0].[Name] IS NOT NULL THEN [c0].[Name]
+    ELSE [c].[Name]
+END <> N'Ephyra'
+""");
+    }
+
+    public override async Task Conditional_Navigation_With_Complex_Member_Access(bool async)
+    {
+        await base.Conditional_Navigation_With_Complex_Member_Access(async);
+
+        AssertSql(
+            """
+SELECT [u].[Nickname]
+FROM (
+    SELECT [g].[Nickname], [g].[AssignedCityName], [g].[CityOfBirthName]
+    FROM [Gears] AS [g]
+    UNION ALL
+    SELECT [o].[Nickname], [o].[AssignedCityName], [o].[CityOfBirthName]
+    FROM [Officers] AS [o]
+) AS [u]
+LEFT JOIN [Cities] AS [c] ON [u].[AssignedCityName] = [c].[Name]
+INNER JOIN [Cities] AS [c0] ON [u].[CityOfBirthName] = [c0].[Name]
+WHERE CASE
+    WHEN [c].[Name] IS NOT NULL THEN CAST(LEN([c].[Name]) AS int)
+    ELSE CAST(LEN([c0].[Name]) AS int)
+END <> 6
+""");
+    }
+
+    public override async Task Conditional_Navigation_With_Navigation_Member_Access(bool async)
+    {
+        await base.Conditional_Navigation_With_Navigation_Member_Access(async);
+
+        AssertSql(
+            """
+SELECT [w].[Name]
+FROM [Weapons] AS [w]
+LEFT JOIN [Weapons] AS [w0] ON [w].[SynergyWithId] = [w0].[Id]
+LEFT JOIN (
+    SELECT [g].[Nickname], [g].[FullName]
+    FROM [Gears] AS [g]
+    UNION ALL
+    SELECT [o].[Nickname], [o].[FullName]
+    FROM [Officers] AS [o]
+) AS [u] ON [w0].[OwnerFullName] = [u].[FullName]
+LEFT JOIN (
+    SELECT [g0].[Nickname], [g0].[FullName]
+    FROM [Gears] AS [g0]
+    UNION ALL
+    SELECT [o0].[Nickname], [o0].[FullName]
+    FROM [Officers] AS [o0]
+) AS [u0] ON [w].[OwnerFullName] = [u0].[FullName]
+WHERE CASE
+    WHEN [w0].[Id] IS NOT NULL THEN [u].[Nickname]
+    ELSE [u0].[Nickname]
+END <> N'Marcus' OR CASE
+    WHEN [w0].[Id] IS NOT NULL THEN [u].[Nickname]
+    ELSE [u0].[Nickname]
+END IS NULL
+""");
+    }
+
     public override async Task Select_Singleton_Navigation_With_Member_Access(bool async)
     {
         await base.Select_Singleton_Navigation_With_Member_Access(async);
