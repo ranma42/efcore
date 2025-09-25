@@ -4723,31 +4723,28 @@ public abstract class GearsOfWarQueryTestBase<TFixture>(TFixture fixture) : Quer
             ss => ss.Set<Faction>().Where(f => f is LocustHorde).Select(f => ((LocustHorde)f).Commander));
 
     [ConditionalTheory, MemberData(nameof(IsAsyncData))]
-    public virtual async Task Navigation_based_on_complex_expression4(bool async)
-        // Nav expansion. Issue #17782.
-        => await Assert.ThrowsAsync<EqualException>(() => AssertQuery(
+    public virtual Task Navigation_based_on_complex_expression4(bool async)
+        => AssertQuery(
             async,
             ss => from lc1 in ss.Set<Faction>().Select(f => (f is LocustHorde) ? ((LocustHorde)f).Commander : null)
                   from lc2 in ss.Set<LocustLeader>().OfType<LocustCommander>()
-                  select (lc1 ?? lc2).DefeatedBy));
+                  select (lc1 ?? lc2).DefeatedBy);
 
     [ConditionalTheory, MemberData(nameof(IsAsyncData))]
-    public virtual async Task Navigation_based_on_complex_expression5(bool async)
-        // Nav expansion. Issue #17782.
-        => await Assert.ThrowsAsync<EqualException>(() => AssertQuery(
+    public virtual Task Navigation_based_on_complex_expression5(bool async)
+        => AssertQuery(
             async,
             ss => from lc1 in ss.Set<Faction>().OfType<LocustHorde>().Select(lh => lh.Commander)
                   join lc2 in ss.Set<LocustLeader>().OfType<LocustCommander>() on true equals true
-                  select (lc1 ?? lc2).DefeatedBy));
+                  select (lc1 ?? lc2).DefeatedBy);
 
     [ConditionalTheory, MemberData(nameof(IsAsyncData))]
-    public virtual async Task Navigation_based_on_complex_expression6(bool async)
-        // Nav expansion. Issue #17782.
-        => await Assert.ThrowsAsync<EqualException>(() => AssertQuery(
+    public virtual Task Navigation_based_on_complex_expression6(bool async)
+        => AssertQuery(
             async,
             ss => from lc1 in ss.Set<Faction>().OfType<LocustHorde>().Select(lh => lh.Commander)
-                  join lc2 in ss.Set<LocustLeader>().OfType<LocustCommander>() on true equals true
-                  select (lc1.Name == "Queen Myrrah" ? lc1 : lc2).DefeatedBy));
+                    join lc2 in ss.Set<LocustLeader>().OfType<LocustCommander>() on true equals true
+                    select (lc1.Name == "Queen Myrrah" ? lc1 : lc2).DefeatedBy);
 
     [ConditionalTheory, MemberData(nameof(IsAsyncData))]
     public virtual Task Select_as_operator(bool async)

@@ -7866,10 +7866,10 @@ SELECT "g"."Nickname"
 FROM "Gears" AS "g"
 LEFT JOIN "Cities" AS "c" ON "g"."AssignedCityName" = "c"."Name"
 INNER JOIN "Cities" AS "c0" ON "g"."CityOfBirthName" = "c0"."Name"
-WHERE CASE
-    WHEN "c"."Name" IS NOT NULL THEN length("c"."Name")
-    ELSE length("c0"."Name")
-END <> 6
+WHERE length(CASE
+    WHEN "c"."Name" IS NOT NULL THEN "c"."Name"
+    ELSE "c0"."Name"
+END) <> 6
 """);
     }
 
@@ -7879,14 +7879,18 @@ END <> 6
 
         AssertSql(
             """
-SELECT "g"."Nickname"
-FROM "Gears" AS "g"
-LEFT JOIN "Cities" AS "c" ON "g"."AssignedCityName" = "c"."Name"
-INNER JOIN "Cities" AS "c0" ON "g"."CityOfBirthName" = "c0"."Name"
+SELECT "w"."Name"
+FROM "Weapons" AS "w"
+LEFT JOIN "Weapons" AS "w0" ON "w"."SynergyWithId" = "w0"."Id"
+LEFT JOIN "Gears" AS "g" ON "w0"."OwnerFullName" = "g"."FullName"
+LEFT JOIN "Gears" AS "g0" ON "w"."OwnerFullName" = "g0"."FullName"
 WHERE CASE
-    WHEN "c"."Name" IS NOT NULL THEN length("c"."Name")
-    ELSE length("c0"."Name")
-END <> 6
+    WHEN "w0"."Id" IS NOT NULL THEN "g"."Nickname"
+    ELSE "g0"."Nickname"
+END <> 'Marcus' OR CASE
+    WHEN "w0"."Id" IS NOT NULL THEN "g"."Nickname"
+    ELSE "g0"."Nickname"
+END IS NULL
 """);
     }
 
@@ -8291,10 +8295,10 @@ ORDER BY "g"."Nickname", "m"."Id"
 
         AssertSql(
             """
-SELECT 1, "l2"."Name", "l2"."Discriminator", "l2"."LocustHordeId", "l2"."ThreatLevel", "l2"."ThreatLevelByte", "l2"."ThreatLevelNullableByte", "l2"."DefeatedByNickname", "l2"."DefeatedBySquadId", "l2"."HighCommandId", "l0"."Name", "l0"."Discriminator", "l0"."LocustHordeId", "l0"."ThreatLevel", "l0"."ThreatLevelByte", "l0"."ThreatLevelNullableByte", "l0"."DefeatedByNickname", "l0"."DefeatedBySquadId", "l0"."HighCommandId"
+SELECT 1, "l2"."Name", "l2"."Discriminator", "l2"."LocustHordeId", "l2"."ThreatLevel", "l2"."ThreatLevelByte", "l2"."ThreatLevelNullableByte", "l2"."DefeatedByNickname", "l2"."DefeatedBySquadId", "l2"."HighCommandId", "g"."Nickname", "g"."SquadId", "g"."AssignedCityName", "g"."CityOfBirthName", "g"."Discriminator", "g"."FullName", "g"."HasSoulPatch", "g"."LeaderNickname", "g"."LeaderSquadId", "g"."Rank", "g0"."Nickname", "g0"."SquadId", "g0"."AssignedCityName", "g0"."CityOfBirthName", "g0"."Discriminator", "g0"."FullName", "g0"."HasSoulPatch", "g0"."LeaderNickname", "g0"."LeaderSquadId", "g0"."Rank"
 FROM "Factions" AS "f"
 CROSS JOIN (
-    SELECT "l"."Name", "l"."Discriminator", "l"."LocustHordeId", "l"."ThreatLevel", "l"."ThreatLevelByte", "l"."ThreatLevelNullableByte", "l"."DefeatedByNickname", "l"."DefeatedBySquadId", "l"."HighCommandId"
+    SELECT "l"."DefeatedByNickname", "l"."DefeatedBySquadId"
     FROM "LocustLeaders" AS "l"
     WHERE "l"."Discriminator" = 'LocustCommander'
 ) AS "l0"
@@ -8303,6 +8307,8 @@ LEFT JOIN (
     FROM "LocustLeaders" AS "l1"
     WHERE "l1"."Discriminator" = 'LocustCommander'
 ) AS "l2" ON "f"."CommanderName" = "l2"."Name"
+LEFT JOIN "Gears" AS "g" ON "l2"."DefeatedByNickname" = "g"."Nickname" AND "l2"."DefeatedBySquadId" = "g"."SquadId"
+LEFT JOIN "Gears" AS "g0" ON "l0"."DefeatedByNickname" = "g0"."Nickname" AND "l0"."DefeatedBySquadId" = "g0"."SquadId"
 """);
     }
 
@@ -8312,18 +8318,20 @@ LEFT JOIN (
 
         AssertSql(
             """
-SELECT "l2"."Name", "l2"."Discriminator", "l2"."LocustHordeId", "l2"."ThreatLevel", "l2"."ThreatLevelByte", "l2"."ThreatLevelNullableByte", "l2"."DefeatedByNickname", "l2"."DefeatedBySquadId", "l2"."HighCommandId", "l0"."Name", "l0"."Discriminator", "l0"."LocustHordeId", "l0"."ThreatLevel", "l0"."ThreatLevelByte", "l0"."ThreatLevelNullableByte", "l0"."DefeatedByNickname", "l0"."DefeatedBySquadId", "l0"."HighCommandId"
+SELECT "l2"."Name" IS NOT NULL, "g"."Nickname", "g"."SquadId", "g"."AssignedCityName", "g"."CityOfBirthName", "g"."Discriminator", "g"."FullName", "g"."HasSoulPatch", "g"."LeaderNickname", "g"."LeaderSquadId", "g"."Rank", "g0"."Nickname", "g0"."SquadId", "g0"."AssignedCityName", "g0"."CityOfBirthName", "g0"."Discriminator", "g0"."FullName", "g0"."HasSoulPatch", "g0"."LeaderNickname", "g0"."LeaderSquadId", "g0"."Rank"
 FROM "Factions" AS "f"
 CROSS JOIN (
-    SELECT "l"."Name", "l"."Discriminator", "l"."LocustHordeId", "l"."ThreatLevel", "l"."ThreatLevelByte", "l"."ThreatLevelNullableByte", "l"."DefeatedByNickname", "l"."DefeatedBySquadId", "l"."HighCommandId"
+    SELECT "l"."DefeatedByNickname", "l"."DefeatedBySquadId"
     FROM "LocustLeaders" AS "l"
     WHERE "l"."Discriminator" = 'LocustCommander'
 ) AS "l0"
 LEFT JOIN (
-    SELECT "l1"."Name", "l1"."Discriminator", "l1"."LocustHordeId", "l1"."ThreatLevel", "l1"."ThreatLevelByte", "l1"."ThreatLevelNullableByte", "l1"."DefeatedByNickname", "l1"."DefeatedBySquadId", "l1"."HighCommandId"
+    SELECT "l1"."Name", "l1"."DefeatedByNickname", "l1"."DefeatedBySquadId"
     FROM "LocustLeaders" AS "l1"
     WHERE "l1"."Discriminator" = 'LocustCommander'
 ) AS "l2" ON "f"."CommanderName" = "l2"."Name"
+LEFT JOIN "Gears" AS "g" ON "l2"."DefeatedByNickname" = "g"."Nickname" AND "l2"."DefeatedBySquadId" = "g"."SquadId"
+LEFT JOIN "Gears" AS "g0" ON "l0"."DefeatedByNickname" = "g0"."Nickname" AND "l0"."DefeatedBySquadId" = "g0"."SquadId"
 """);
     }
 
@@ -8333,18 +8341,20 @@ LEFT JOIN (
 
         AssertSql(
             """
-SELECT "l2"."Name" = 'Queen Myrrah' AND "l2"."Name" IS NOT NULL, "l2"."Name", "l2"."Discriminator", "l2"."LocustHordeId", "l2"."ThreatLevel", "l2"."ThreatLevelByte", "l2"."ThreatLevelNullableByte", "l2"."DefeatedByNickname", "l2"."DefeatedBySquadId", "l2"."HighCommandId", "l0"."Name", "l0"."Discriminator", "l0"."LocustHordeId", "l0"."ThreatLevel", "l0"."ThreatLevelByte", "l0"."ThreatLevelNullableByte", "l0"."DefeatedByNickname", "l0"."DefeatedBySquadId", "l0"."HighCommandId"
+SELECT "l2"."Name" = 'Queen Myrrah' AND "l2"."Name" IS NOT NULL, "g"."Nickname", "g"."SquadId", "g"."AssignedCityName", "g"."CityOfBirthName", "g"."Discriminator", "g"."FullName", "g"."HasSoulPatch", "g"."LeaderNickname", "g"."LeaderSquadId", "g"."Rank", "g0"."Nickname", "g0"."SquadId", "g0"."AssignedCityName", "g0"."CityOfBirthName", "g0"."Discriminator", "g0"."FullName", "g0"."HasSoulPatch", "g0"."LeaderNickname", "g0"."LeaderSquadId", "g0"."Rank"
 FROM "Factions" AS "f"
 CROSS JOIN (
-    SELECT "l"."Name", "l"."Discriminator", "l"."LocustHordeId", "l"."ThreatLevel", "l"."ThreatLevelByte", "l"."ThreatLevelNullableByte", "l"."DefeatedByNickname", "l"."DefeatedBySquadId", "l"."HighCommandId"
+    SELECT "l"."DefeatedByNickname", "l"."DefeatedBySquadId"
     FROM "LocustLeaders" AS "l"
     WHERE "l"."Discriminator" = 'LocustCommander'
 ) AS "l0"
 LEFT JOIN (
-    SELECT "l1"."Name", "l1"."Discriminator", "l1"."LocustHordeId", "l1"."ThreatLevel", "l1"."ThreatLevelByte", "l1"."ThreatLevelNullableByte", "l1"."DefeatedByNickname", "l1"."DefeatedBySquadId", "l1"."HighCommandId"
+    SELECT "l1"."Name", "l1"."DefeatedByNickname", "l1"."DefeatedBySquadId"
     FROM "LocustLeaders" AS "l1"
     WHERE "l1"."Discriminator" = 'LocustCommander'
 ) AS "l2" ON "f"."CommanderName" = "l2"."Name"
+LEFT JOIN "Gears" AS "g" ON "l2"."DefeatedByNickname" = "g"."Nickname" AND "l2"."DefeatedBySquadId" = "g"."SquadId"
+LEFT JOIN "Gears" AS "g0" ON "l0"."DefeatedByNickname" = "g0"."Nickname" AND "l0"."DefeatedBySquadId" = "g0"."SquadId"
 """);
     }
 
