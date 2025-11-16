@@ -48,8 +48,61 @@ public partial class NavigationExpandingExpressionVisitor
         protected override Expression VisitMember(MemberExpression memberExpression)
         {
             var innerExpression = Visit(memberExpression.Expression);
+
+            if (
+                innerExpression is ConditionalExpression cond &&
+                ShouldDistributeMemberAccess(innerExpression, memberExpression.Member)
+            )
+            {
+                // Fold member access into conditional, i.e. transform
+                // (test ? ifTrue : ifFalse).Member -> (test ? ifTrue.Member : ifFalse.Member)
+
+                return Visit(ReplacingExpressionVisitor.Replace([], [], Expression.Condition(
+                    cond.Test,
+                    Expression.MakeMemberAccess(cond.IfTrue, memberExpression.Member),
+                    Expression.MakeMemberAccess(cond.IfFalse, memberExpression.Member)
+                )));
+            }
+            else if (
+                innerExpression is BinaryExpression { NodeType: ExpressionType.Coalesce } coalesceExpr &&
+                ShouldDistributeMemberAccess(innerExpression, memberExpression.Member)
+            )
+            {
+                // Fold member access into coalesce, i.e. transform
+                // (lhs ?? rhs).Member -> (lsh = null ? lhs.Member : rhs.Member)
+
+                return Visit(ReplacingExpressionVisitor.Replace([], [], Expression.Condition(
+                    Expression.NotEqual(coalesceExpr.Left, Expression.Constant(null)),
+                    Expression.MakeMemberAccess(coalesceExpr.Left, memberExpression.Member),
+                    Expression.MakeMemberAccess(coalesceExpr.Right, memberExpression.Member)
+                )));
+            }
+
             return TryExpandRelationship(innerExpression, MemberIdentity.Create(memberExpression.Member), memberExpression)
                 ?? memberExpression.Update(innerExpression);
+        }
+
+        private bool ShouldDistributeMemberAccess(Expression? expression, MemberInfo member)
+        {
+            if (expression is null)
+            {
+                return false;
+            }
+
+            if (Nullable.GetUnderlyingType(expression.Type) is not null && member.Name == nameof(Nullable<>.HasValue))
+            {
+                // distribute IS NOT NULL
+                return true;
+            }
+
+            if (Model.FindEntityType(expression.Type) is { } entityType)
+            {
+                // distribute EFCore member accesses
+                return entityType.FindProperty(member) is not null ||
+                    entityType.FindNavigation(member) is not null;
+            }
+
+            return false;
         }
 
         protected override Expression VisitMethodCall(MethodCallExpression methodCallExpression)

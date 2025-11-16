@@ -627,17 +627,6 @@ public partial class RelationalSqlTranslatingExpressionVisitor : ExpressionVisit
     /// <inheritdoc />
     protected override Expression VisitMember(MemberExpression memberExpression)
     {
-        // Fold member access into conditional, i.e. transform
-        // (test ? expr1 : expr2).Member -> (test ? expr1.Member : expr2.Member)
-        if (memberExpression.Expression is ConditionalExpression cond)
-        {
-            return Visit(
-                Expression.Condition(
-                    cond.Test,
-                    Expression.MakeMemberAccess(cond.IfTrue, memberExpression.Member),
-                    Expression.MakeMemberAccess(cond.IfFalse, memberExpression.Member)));
-        }
-
         var inner = Visit(memberExpression.Expression);
 
         var member = memberExpression.Member;
